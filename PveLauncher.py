@@ -12,8 +12,9 @@ import base64
 import hashlib
 import shelve
 import os
+from tkinter import *
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 class AutoStr:
     def __str__(self):
@@ -276,6 +277,12 @@ def login(args):
     login_manager.load()
     login_manager.login(args.username)
 
+def gui(args):
+    root = Tk()
+    w = Label(root, text="Test Tk")
+    w.pack()
+    root.mainloop()
+
 if __name__ == "__main__":
 
     crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
@@ -300,6 +307,10 @@ if __name__ == "__main__":
     parser_login = subparsers.add_parser('login', help='login -h for help')
     parser_login.add_argument("-n", "--username", help="Eve login username", required=True)
     parser_login.set_defaults(func=login)
+
+    # parser for gui
+    parser_gui = subparsers.add_parser('gui', help="start the gui,  for help 'gui -h'")
+    parser_gui.set_defaults(func=gui)
 
     args = parser.parse_args()
     args.func(args)
