@@ -6,6 +6,8 @@ from tkinter import *
 from eve.account import *
 from gui import mainwindow
 from gui import mainwindow_support
+import threading
+from eve.eveapi import EveApi
 
 
 __version__ = "0.0.3"
@@ -31,14 +33,43 @@ def login(args):
     login_manager.login(args.username)
 
 
+class GuiStarter():
+    def __init__(self, crypt):
+        self.root = Tk()
+        self.root.title('PveLauncher')
+        geom = "259x185+496+300"
+        self.root.geometry(geom)
+        eve_api = EveApi()
+        self.pvelauncher = mainwindow.PveLauncher(self.root)
+        mainwindow_support.init(self.root, self.pvelauncher, crypt)
+        self.eve_api = eve_api
+        self.timer = None
+        self.root.bind("<Destroy>", self.end_timer)
+
+    def start_gui(self):
+        self.timer = threading.Timer(1.0, self.update_server_status, kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
+        self.root.mainloop()
+
+    def update_server_status(self, window, api):
+        status = api.get_server_status()
+        if status.server_open:
+            status_text = "Online"
+        else:
+            status_text = "Offline"
+
+        window.set_server_status("{0}({1:d})".format(status_text, status.online_players))
+        self.timer = threading.Timer(60.0, self.update_server_status, kwargs={'window': window, 'api': api})
+        self.timer.start()
+
+    def end_timer(self, event):
+        if event.widget == self.root:
+            if self.timer is not None:
+                self.timer.cancel()
+
+
 def vp_start_gui(crypt):
-    root = Tk()
-    root.title('PveLauncher')
-    geom = "259x185+496+300"
-    root.geometry(geom)
-    w = mainwindow.PveLauncher(root)
-    mainwindow_support.init(root, w, crypt)
-    root.mainloop()
+    gui_starter = GuiStarter(crypt)
+    gui_starter.start_gui()
 
 
 def gui(args):

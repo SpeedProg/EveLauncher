@@ -5,7 +5,7 @@
 # Apr 20, 2015 09:45:50 PM
 
 from tkinter import *
-import tkinter.ttk as ttk
+from tkinter.ttk import *
 
 from gui import mainwindow_support
 
@@ -38,35 +38,42 @@ class PveLauncher:
         _compcolor = '#d9d9d9'  # X11 color: 'gray85'
         _ana1color = '#d9d9d9'  # X11 color: 'gray85'
         _ana2color = '#d9d9d9'  # X11 color: 'gray85'
-        self.style = ttk.Style()
+        self.style = Style()
         if sys.platform == "win32":
-            self.style.theme_use('winnative')
+            if 'vista' in self.style.theme_names():
+                self.style.theme_use('vista')
+            else:
+                self.style.theme_use('winnative')
+
         self.style.configure('.', background=_bgcolor)
         self.style.configure('.', foreground=_fgcolor)
         self.style.configure('.', font="TkDefaultFont")
         self.style.map('.', background=[('selected', _compcolor), ('active', _ana2color)])
         master.configure(background="#d9d9d9")
 
-        self.btn_launch = ttk.Button(master)
-        self.btn_launch.place(relx=0.69, rely=0.05, height=25, width=76)
+        self.lbl_server_status = Label(master, text="")
+        self.lbl_server_status.place(relx=0.69, rely=0.0, height=25, width=76)
+
+        self.btn_launch = Button(master)
+        self.btn_launch.place(relx=0.69, rely=0.22, height=25, width=76)
         self.btn_launch.configure(command=mainwindow_support.gui_login)
         self.btn_launch.configure(takefocus="")
         self.btn_launch.configure(text='''Launch''')
 
-        self.btn_edit = ttk.Button(master)
-        self.btn_edit.place(relx=0.69, rely=0.22, height=25, width=76)
+        self.btn_edit = Button(master)
+        self.btn_edit.place(relx=0.69, rely=0.38, height=25, width=76)
         self.btn_edit.configure(command=mainwindow_support.gui_edit)
         self.btn_edit.configure(takefocus="")
         self.btn_edit.configure(text='''Edit''')
 
-        self.btn_add = ttk.Button(master)
-        self.btn_add.place(relx=0.69, rely=0.38, height=25, width=76)
+        self.btn_add = Button(master)
+        self.btn_add.place(relx=0.69, rely=0.54, height=25, width=76)
         self.btn_add.configure(command=mainwindow_support.gui_add)
         self.btn_add.configure(takefocus="")
         self.btn_add.configure(text='''Add''')
 
-        self.btn_delete = ttk.Button(master)
-        self.btn_delete.place(relx=0.69, rely=0.54, height=25, width=76)
+        self.btn_delete = Button(master)
+        self.btn_delete.place(relx=0.69, rely=0.70, height=25, width=76)
         self.btn_delete.configure(command=mainwindow_support.gui_delete)
         self.btn_delete.configure(takefocus="")
         self.btn_delete.configure(text='''Delete''')
@@ -83,6 +90,9 @@ class PveLauncher:
         self.acc_list.configure(selectforeground="black")
         self.acc_list.configure(width=10)
 
+    def set_server_status(self, status_string):
+        self.lbl_server_status.config(text=status_string)
+
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
@@ -93,10 +103,10 @@ class AutoScroll(object):
         #  could be used for scrolled entry widget for which vertical
         #  scrolling is not supported. 5/7/14.
         try:
-            vsb = ttk.Scrollbar(master, orient='vertical', command=self.yview)
+            vsb = Scrollbar(master, orient='vertical', command=self.yview)
         except:
             pass
-        hsb = ttk.Scrollbar(master, orient='horizontal', command=self.xview)
+        hsb = Scrollbar(master, orient='horizontal', command=self.xview)
 
         #  self.configure(yscrollcommand=self._autoscroll(vsb),
         #  xscrollcommand=self._autoscroll(hsb))
@@ -146,7 +156,7 @@ def _create_container(func):
     place the scrollbars and the widget.'''
 
     def wrapped(cls, master, **kw):
-        container = ttk.Frame(master)
+        container = Frame(master)
         return func(cls, container, **kw)
 
     return wrapped
