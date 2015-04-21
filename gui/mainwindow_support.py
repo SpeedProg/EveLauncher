@@ -70,12 +70,9 @@ def init(top, gui, crypter):
     for account_name in login_manager.accounts:
         gui.acc_list.insert(END, account_name)
 
-    root.bind("<Destroy>", close)
 
-
-def close(event):
-    if event.widget == root:  # if root is shut down
-        login_manager.save()
+def close():
+    login_manager.save()
 
 
 def destroy_window():

@@ -10,7 +10,7 @@ import threading
 from eve.eveapi import EveApi
 
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 
 def add(args):
@@ -47,7 +47,7 @@ class GuiStarter():
         self.root.bind("<Destroy>", self.end_timer)
 
     def start_gui(self):
-        self.timer = threading.Timer(1.0, self.update_server_status, kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
+        self.timer = threading.Timer(0.001, self.update_server_status, kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
         self.root.mainloop()
 
     def update_server_status(self, window, api):
@@ -65,6 +65,7 @@ class GuiStarter():
         if event.widget == self.root:
             if self.timer is not None:
                 self.timer.cancel()
+            mainwindow_support.close()
 
 
 def vp_start_gui(crypt):
