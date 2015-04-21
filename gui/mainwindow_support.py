@@ -60,6 +60,10 @@ def gui_delete():
         w.acc_list.delete(idx)
 
 
+def gui_clear_cache():
+    login_manager.clear_cache()
+
+
 def init(top, gui, crypter):
     global w, top_level, root, login_manager
     w = gui

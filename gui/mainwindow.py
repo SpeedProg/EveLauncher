@@ -78,6 +78,12 @@ class PveLauncher:
         self.btn_delete.configure(takefocus="")
         self.btn_delete.configure(text='''Delete''')
 
+        self.btn_clear_cache = Button(master)
+        self.btn_clear_cache.place(relx=0.69, rely=0.86, height=25, width=76)
+        self.btn_clear_cache.configure(command=mainwindow_support.gui_clear_cache)
+        self.btn_clear_cache.configure(takefocus="")
+        self.btn_clear_cache.configure(text='''Clear Cache''')
+
         self.acc_list = ScrolledListBox(master)
         self.acc_list.place(relx=0.0, rely=0.0, relheight=1.0, relwidth=0.67)
         self.acc_list.configure(background="white")

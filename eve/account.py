@@ -221,7 +221,15 @@ class EveLoginManager(AutoStr):
         self.db = shelve.open("settings.v2")
 
     def __del__(self):
-        self.db.close()
+        if self.db is not None:
+            self.db.close()
+
+    def clear_cache(self):
+        for acc_key in self.db.keys():
+            acc = self.db[acc_key]
+            acc.bearer_token = None
+            acc.client_token = None
+            self.db[acc_key] = acc
 
     """
         @account EveAccount
