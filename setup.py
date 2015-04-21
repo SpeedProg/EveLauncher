@@ -9,6 +9,5 @@ setup(
     options={'py2exe': {
         'packages': ['dbm'],
         'includes': 'eve, utils, gui',
-        }
-    }
+    }}
 )

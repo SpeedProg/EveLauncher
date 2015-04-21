@@ -24,7 +24,7 @@ def add(args):
 
 
 def login(args):
-    print("Login with "+args.username)
+    print("Login with " + args.username)
     crypt = Coding(args.encryption.encode('utf-8'))
     login_manager = EveLoginManager(crypt)
     login_manager.load()
@@ -62,7 +62,8 @@ def entry():
     parser_add.add_argument("-n", "--username", help="Eve login username", required=True)
     parser_add.add_argument("-a", "--password", help="Eve login password, use this once to store an encrypted version",
                             required=True)
-    parser_add.add_argument("-dx", "--directx", choices="dx9,dx11", help="DirectX version to use, xd11(default) or dx9", nargs='?',
+    parser_add.add_argument("-dx", "--directx", choices="dx9,dx11", help="DirectX version to use, xd11(default) or dx9",
+                            nargs='?',
                             default='dx11')
     parser_add.set_defaults(func=add)
 

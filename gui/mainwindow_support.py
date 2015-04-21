@@ -6,10 +6,11 @@
 
 
 from tkinter import messagebox, END
-from eve.account import EveLoginManager, EveAccount
-from gui.newaccountdialog import AccountDialog
 import os
 from urllib.error import *
+
+from eve.account import EveLoginManager, EveAccount
+from gui.newaccountdialog import AccountDialog
 
 
 def gui_edit():
@@ -27,6 +28,7 @@ def gui_edit():
                                  None, None, dialog.result[3])
             login_manager.add_account(account)
 
+
 def gui_login():
     items = map(int, w.acc_list.curselection())
     for idx in items:
@@ -34,8 +36,6 @@ def gui_login():
             login_manager.login(w.acc_list.get(idx))
         except URLError as e:
             messagebox.showerror("Error", e.msg)
-
-
 
 
 def gui_add():

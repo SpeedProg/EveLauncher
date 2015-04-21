@@ -1,12 +1,11 @@
 __author__ = 'SpeedProg'
 
-import gui.tksimpledialog
 from tkinter import END, Label, Entry, OptionMenu, StringVar, Tk
-from tkinter.filedialog import askdirectory
-import os.path
+
+import gui.tksimpledialog
+
 
 class AccountDialog(gui.tksimpledialog.Dialog):
-
     def __init__(self, parent, title="", login_name="", password="", path="", dx="dx11"):
         self.login_name = login_name
         self.password = password
@@ -37,7 +36,7 @@ class AccountDialog(gui.tksimpledialog.Dialog):
         self.entry_pw.insert(END, self.password)
         self.entry_path.insert(END, self.path)
 
-#        self.entry_path.bind("<FocusIn>", self.select_eve_path)
+        # self.entry_path.bind("<FocusIn>", self.select_eve_path)
 
         self.entry_ln.grid(row=0, column=1)
         self.entry_pw.grid(row=1, column=1)
@@ -45,12 +44,13 @@ class AccountDialog(gui.tksimpledialog.Dialog):
         self.entry_dx.grid(row=3, column=1)
         return self.entry_ln
 
-#    def select_eve_path(self, event):
-#        if event.widget == self.entry_path:
-#            self.path
-#            res = os.path.normpath(askdirectory(initialdir=self.path))
-#           self.path = res
-#            self.entry_path.insert(END, res)
+        # def select_eve_path(self, event):
+
+    #        if event.widget == self.entry_path:
+    #            self.path
+    #            res = os.path.normpath(askdirectory(initialdir=self.path))
+    #           self.path = res
+    #            self.entry_path.insert(END, res)
 
     def apply(self):
         login_name = self.entry_ln.get()
@@ -58,6 +58,7 @@ class AccountDialog(gui.tksimpledialog.Dialog):
         path = self.entry_path.get()
         dx = self.variable.get()
         self.result = [login_name, password, path, dx]
+
 
 if __name__ == "__main__":
     root = Tk()
