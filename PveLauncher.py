@@ -1,10 +1,12 @@
 # coding=utf-8
-from eve.account import *
 import argparse
 import os
 from tkinter import *
+
+from eve.account import *
 from gui import mainwindow
 from gui import mainwindow_support
+
 
 __version__ = "0.0.3"
 
@@ -45,8 +47,7 @@ def gui(args):
     vp_start_gui(crypt)
 
 
-if __name__ == "__main__":
-
+def entry():
     crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--encryption",
@@ -77,6 +78,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if hasattr(args, 'func'):
         args.func(args)
-        exit()
+    else:
+        gui(args)
 
-    gui(args)
+
+if __name__ == "__main__":
+    entry()
