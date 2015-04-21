@@ -4,39 +4,15 @@
 # In conjunction with Tcl version 8.6
 # Apr 20, 2015 09:45:50 PM
 
-try:
-    from Tkinter import *
-except ImportError:
-    from tkinter import *
-
-try:
-    import ttk
-
-    py3 = 0
-except ImportError:
-    import tkinter.ttk as ttk
-
-    py3 = 1
+from tkinter import *
+import tkinter.ttk as ttk
 
 from gui import mainwindow_support
-
-
-def vp_start_gui():
-    '''Starting point when module is the main routine.'''
-    global val, w, root
-    root = Tk()
-    root.title('PveLauncher')
-    geom = "259x185+496+300"
-    root.geometry(geom)
-    w = PveLauncher(root)
-    mainwindow_support.init(root, w)
-    root.mainloop()
-
 
 w = None
 
 
-def create_PveLauncher(root, param=None):
+def create_pvelauncher(root, param=None):
     '''Starting point when module is imported by another program.'''
     global w, w_win, rt
     rt = root
@@ -49,7 +25,7 @@ def create_PveLauncher(root, param=None):
     return w_win
 
 
-def destroy_PveLauncher():
+def destroy_pvelauncher():
     global w
     w.destroy()
     w = None
@@ -68,8 +44,7 @@ class PveLauncher:
         self.style.configure('.', background=_bgcolor)
         self.style.configure('.', foreground=_fgcolor)
         self.style.configure('.', font="TkDefaultFont")
-        self.style.map('.', background=
-        [('selected', _compcolor), ('active', _ana2color)])
+        self.style.map('.', background=[('selected', _compcolor), ('active', _ana2color)])
         master.configure(background="#d9d9d9")
 
         self.btn_launch = ttk.Button(master)
@@ -123,8 +98,8 @@ class AutoScroll(object):
             pass
         hsb = ttk.Scrollbar(master, orient='horizontal', command=self.xview)
 
-        #self.configure(yscrollcommand=self._autoscroll(vsb),
-        #    xscrollcommand=self._autoscroll(hsb))
+        #  self.configure(yscrollcommand=self._autoscroll(vsb),
+        #  xscrollcommand=self._autoscroll(hsb))
         try:
             self.configure(yscrollcommand=self._autoscroll(vsb))
         except:
@@ -142,12 +117,7 @@ class AutoScroll(object):
         master.grid_rowconfigure(0, weight=1)
 
         # Copy geometry methods of master  (taken from ScrolledText.py)
-        if py3:
-            methods = Pack.__dict__.keys() | Grid.__dict__.keys() \
-                      | Place.__dict__.keys()
-        else:
-            methods = Pack.__dict__.keys() + Grid.__dict__.keys() \
-                      + Place.__dict__.keys()
+        methods = Pack.__dict__.keys() | Grid.__dict__.keys() | Place.__dict__.keys()
 
         for meth in methods:
             if meth[0] != '_' and meth not in ('config', 'configure'):
@@ -190,10 +160,3 @@ class ScrolledListBox(AutoScroll, Listbox):
     def __init__(self, master, **kw):
         Listbox.__init__(self, master, **kw)
         AutoScroll.__init__(self, master)
-
-
-if __name__ == '__main__':
-    vp_start_gui()
-
-
-

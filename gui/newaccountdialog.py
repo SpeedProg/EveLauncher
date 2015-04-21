@@ -18,7 +18,6 @@ class AccountDialog(gui.tksimpledialog.Dialog):
         self.entry_dx = None
         super().__init__(parent, title)
 
-
     def body(self, master):
         Label(master, text="Login Name:").grid(row=0)
         Label(master, text="Password:").grid(row=1)

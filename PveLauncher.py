@@ -32,7 +32,6 @@ def login(args):
 
 
 def vp_start_gui(crypt):
-    global val, w, root
     root = Tk()
     root.title('PveLauncher')
     geom = "259x185+496+300"

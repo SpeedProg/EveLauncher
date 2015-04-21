@@ -97,8 +97,8 @@ class Coding(AutoStr):
         raw = Coding.pkcs5_pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        encD = cipher.encrypt(raw)
-        return iv + encD
+        enc = cipher.encrypt(raw)
+        return iv + enc
 
     def decrypt(self, enc):
         iv = enc[:AES.block_size]
