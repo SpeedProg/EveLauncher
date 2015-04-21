@@ -8,6 +8,7 @@ import subprocess
 import base64
 import hashlib
 import shelve
+from html.parser import HTMLParser
 
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -108,6 +109,34 @@ class Coding(AutoStr):
         return unpadded
 
 
+class EulaParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.eula_hash = None
+        self.return_url = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'input':
+            id_val = self.get_attr_from_attrs(attrs, 'id')
+            if id_val is not None:
+                if id_val == 'eulaHash':
+                    self.eula_hash = self.get_attr_from_attrs(attrs, 'value')
+                if id_val == 'returnUrl':
+                    self.return_url = self.get_attr_from_attrs(attrs, 'value')
+
+    @staticmethod
+    def get_attr_from_attrs(attrs, attr):
+        for a in attrs:
+            if a[0] == attr:
+                return a[1]
+        return None
+
+    def handle_endtag(self, tag):
+        pass
+
+    def handle_data(self, data):
+        pass
+
 class EveLoginManager(AutoStr):
     url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3" \
                        + "DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
@@ -116,6 +145,9 @@ class EveLoginManager(AutoStr):
     bearer_headers = {'Origin': 'https://login.eveonline.com',
                       'Referer': url_bearer_token,
                       'Content-Type': 'application/x-www-form-urlencoded'}
+    url_eula = "https://login.eveonline.com/oauth/authorize/?client_id=eveLauncherTQ&lang=en&response_type=token&redirect_uri=https://login.eveonline.com/launcher?client_id=eveLauncherTQ&scope=eveClientToken"
+    url_post_eula = "https://login.eveonline.com/OAuth/Eula"
+
     bearer_min_timedelta = datetime.timedelta(0, 20, 0, 0, 0, 0, 0)  # 20s
     client_min_timedelta = datetime.timedelta(0, 20, 0, 0, 0, 0, 0)  # 20s
     db_acc_prefix = "acc_"
@@ -140,16 +172,31 @@ class EveLoginManager(AutoStr):
                                          EveLoginManager.bearer_headers)
 
         response = opener.open(request)
+        url = response.geturl()
+        if url == EveLoginManager.url_eula:
+            eula_html = response.read()
+            parser = EulaParser()
+            parser.feed(eula_html.decode('utf-8'))
+            post_data = {'eulaHash': parser.eula_hash, 'returnUrl': parser.return_url}
+            encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
+            headers = {'Origin': 'https://login.eveonline.com',
+                      'Referer': url,
+                      'Content-Type': 'application/x-www-form-urlencoded'}
+            request = urllib.request.Request(EveLoginManager.url_post_eula, encoded_post_data, headers)
+            response = opener.open(request)
+
         return response.geturl()
 
     @staticmethod
     def bearer_token_from_url(url):
+        print(url)
         parsed_token_url = urllib.parse.urlparse(url)
         params = urllib.parse.parse_qs(parsed_token_url.fragment)
 
         if 'expires_in' in params and 'access_token' in params:
             expires_in = datetime.timedelta(0, int(params['expires_in'][0]), 0, 0, 0, 0, 0)
             date_now = datetime.datetime.now(datetime.timezone.utc)
+
             return BearerToken(params['access_token'][0], date_now + expires_in)
         else:
             raise HTTPError(url, 403, "Login data wrong!", "", "")
