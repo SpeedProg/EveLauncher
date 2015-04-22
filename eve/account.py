@@ -138,14 +138,18 @@ class EulaParser(HTMLParser):
         pass
 
 class EveLoginManager(AutoStr):
+    useragent = 'EVEOnlineLauncher/2.2.859950'
     url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3" \
                        + "DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
                        + "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
     url_client_token = "https://login.eveonline.com/launcher/token?accesstoken="
-    bearer_headers = {'Origin': 'https://login.eveonline.com',
+    bearer_headers = {'User-Agent': useragent,
+                      'Origin': 'https://login.eveonline.com',
                       'Referer': url_bearer_token,
                       'Content-Type': 'application/x-www-form-urlencoded'}
-    url_eula = "https://login.eveonline.com/oauth/authorize/?client_id=eveLauncherTQ&lang=en&response_type=token&redirect_uri=https://login.eveonline.com/launcher?client_id=eveLauncherTQ&scope=eveClientToken"
+    url_eula = "https://login.eveonline.com/oauth/authorize/?client_id=eveLauncherTQ&lang=en&" \
+               "response_type=token&redirect_uri=https://login.eveonline.com/launcher?" \
+               "client_id=eveLauncherTQ&scope=eveClientToken"
     url_post_eula = "https://login.eveonline.com/OAuth/Eula"
 
     bearer_min_timedelta = datetime.timedelta(0, 20, 0, 0, 0, 0, 0)  # 20s
@@ -179,9 +183,10 @@ class EveLoginManager(AutoStr):
             parser.feed(eula_html.decode('utf-8'))
             post_data = {'eulaHash': parser.eula_hash, 'returnUrl': parser.return_url}
             encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
-            headers = {'Origin': 'https://login.eveonline.com',
-                      'Referer': url,
-                      'Content-Type': 'application/x-www-form-urlencoded'}
+            headers = {'User-Agent': EveLoginManager.useragent,
+                       'Origin': 'https://login.eveonline.com',
+                       'Referer': url,
+                       'Content-Type': 'application/x-www-form-urlencoded'}
             request = urllib.request.Request(EveLoginManager.url_post_eula, encoded_post_data, headers)
             response = opener.open(request)
 

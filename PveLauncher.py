@@ -13,7 +13,7 @@ from gui.systrayicon import SysTrayIcon
 from threading import Thread
 
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 
 def add(args):
