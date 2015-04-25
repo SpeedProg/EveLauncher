@@ -1,18 +1,22 @@
 # coding=utf-8
 import argparse
 import os
-from tkinter import *
-import threading
-from threading import Thread
+#  from tkinter import *
+#  from gui import mainwindow
+#  from gui import mainwindow_support
+#
+#  from gui.systrayicon import SysTrayIcon
 
 from PySide.QtGui import QApplication
 
 from eve.account import *
-from gui import mainwindow
-from gui import mainwindow_support
-from eve.eveapi import EveApi
-from gui.systrayicon import SysTrayIcon
+
 from gui.qt.window import ControlMainWindow
+import sys
+
+import threading
+from threading import Thread
+from eve.eveapi import EveApi
 
 
 __version__ = "0.0.8"
@@ -36,51 +40,76 @@ def login(args):
     login_manager = EveLoginManager(crypt)
     login_manager.load()
     login_manager.login(args.username)
+#
+#
+# class GuiStarter():
+#     def __init__(self, crypt):
+#         self.root = Tk()
+#         self.root.bind('<Unmap>', self.minimize_event)
+#         self.root.title('PveLauncher')
+#         geom = "259x185+496+300"
+#         self.root.geometry(geom)
+#         eve_api = EveApi()
+#         self.pvelauncher = mainwindow.PveLauncher(self.root)
+#         mainwindow_support.init(self.root, self.pvelauncher, crypt)
+#         self.eve_api = eve_api
+#         self.timer = None
+#         t = Thread(target=GuiStarter.sysicon, args=(self,))
+#         t.start()
+#
+#     def sysicon(self):
+#         menu_options = (
+#             ('Show', None, self.show_window),
+#         )
+#         SysTrayIcon("tray.ico", "Eve Sucks", menu_options, on_quit=self.wth, default_menu_index=1)
+#         self.root.destroy()
+#         self.root.quit()
+#
+#     def show_window(self, tray):
+#         self.root.state('normal')
+#         pass
+#
+#     def wth(self, tray):
+#         pass
+#
+#     def minimize_event(self, event):
+#         # minimize
+#         if event.type == '18' and event.widget == self.root:
+#             self.root.state("withdrawn")
+#
+#     def start_gui(self):
+#         self.timer = threading.Timer(0.001, self.update_server_status,
+#                                      kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
+#         self.root.mainloop()
+#         if self.timer is not None:
+#             self.timer.cancel()
+#             mainwindow_support.close()
+#         os._exit(0)
+#
+#     def update_server_status(self, window, api):
+#         status = api.get_server_status()
+#         if status.server_open:
+#             status_text = "Online"
+#         else:
+#             status_text = "Offline"
+#
+#         window.set_server_status("{0}({1:d})".format(status_text, status.online_players))
+#         self.timer = threading.Timer(60.0, self.update_server_status, kwargs={'window': window, 'api': api})
+#         self.timer.start()
 
 
-class GuiStarter():
-    def __init__(self, crypt):
-        self.root = Tk()
-        self.root.bind('<Unmap>', self.minimize_event)
-        self.root.title('PveLauncher')
-        geom = "259x185+496+300"
-        self.root.geometry(geom)
-        eve_api = EveApi()
-        self.pvelauncher = mainwindow.PveLauncher(self.root)
-        mainwindow_support.init(self.root, self.pvelauncher, crypt)
-        self.eve_api = eve_api
+class QtStarter():
+    def __init__(self, crypter):
+        self.app = QApplication(sys.argv)
+        self.window = ControlMainWindow(crypter)
+        self.eve_api = EveApi()
         self.timer = None
-        t = Thread(target=GuiStarter.sysicon, args=(self,))
-        t.start()
-
-    def sysicon(self):
-        menu_options = (
-            ('Show', None, self.show_window),
-        )
-        SysTrayIcon("tray.ico", "Eve Sucks", menu_options, on_quit=self.wth, default_menu_index=1)
-        self.root.destroy()
-        self.root.quit()
-
-    def show_window(self, tray):
-        self.root.state('normal')
-        pass
-
-    def wth(self, tray):
-        pass
-
-    def minimize_event(self, event):
-        # minimize
-        if event.type == '18' and event.widget == self.root:
-            self.root.state("withdrawn")
 
     def start_gui(self):
         self.timer = threading.Timer(0.001, self.update_server_status,
-                                     kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
-        self.root.mainloop()
-        if self.timer is not None:
-            self.timer.cancel()
-            mainwindow_support.close()
-        os._exit(0)
+                                     kwargs={'window': self.window, 'api': self.eve_api}).start()
+        self.window.show()
+        sys.exit(self.app.exec_())
 
     def update_server_status(self, window, api):
         status = api.get_server_status()
@@ -89,24 +118,14 @@ class GuiStarter():
         else:
             status_text = "Offline"
 
-        window.set_server_status("{0}({1:d})".format(status_text, status.online_players))
-        self.timer = threading.Timer(60.0, self.update_server_status, kwargs={'window': window, 'api': api})
+        window.set_server_status(status_text, status.online_players)
+        self.timer = threading.Timer(10.0, self.update_server_status, kwargs={'window': window, 'api': api})
         self.timer.start()
 
 
-class QtStarter():
-    def __init__(self, crypter):
-        self.app = QApplication(sys.argv)
-        self.window = ControlMainWindow(crypter)
-
-    def start_gui(self):
-        self.window.show()
-        sys.exit(self.app.exec_())
-
-
-def vp_start_gui(crypt):
-    gui_starter = GuiStarter(crypt)
-    gui_starter.start_gui()
+# def vp_start_gui(crypt):
+#     gui_starter = GuiStarter(crypt)
+#     gui_starter.start_gui()
 
 
 def gui(args):

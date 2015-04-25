@@ -11,5 +11,8 @@ setup(
     options={'py2exe': {
         'packages': ['dbm'],
         'includes': 'eve, utils, gui',
+        'dist_dir': 'PveLauncher',
+        'bundle_files': 3,
+        'optimize': 2
     }}
 )

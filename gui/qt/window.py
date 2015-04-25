@@ -161,6 +161,11 @@ class ControlMainWindow(QtGui.QMainWindow):
             invoke_in_main_thread(QtGui.QMessageBox.information, self, "Eve Clients out of date",
                                   info_msg, QtGui.QMessageBox.Ok)
 
+    def set_server_status(self, text, number):
+        self.ui.label_server_status.setText(
+            QtGui.QApplication.translate("main_window", "Offline", None, QtGui.QApplication.UnicodeUTF8)
+            + "({0:d})".format(number))
+
 
 def check_eve_version_for_account(current_version, account):
     config = configparser.ConfigParser()

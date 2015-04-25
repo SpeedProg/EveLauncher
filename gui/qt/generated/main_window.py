@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.btn_launcher.setText(
             QtGui.QApplication.translate("main_window", "Launch", None, QtGui.QApplication.UnicodeUTF8))
         self.label_server_status.setText(
-            QtGui.QApplication.translate("main_window", "Offline(0)", None, QtGui.QApplication.UnicodeUTF8))
+            QtGui.QApplication.translate("main_window", "Offline", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_edit.setText(QtGui.QApplication.translate("main_window", "Edit", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_add.setText(QtGui.QApplication.translate("main_window", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_delete.setText(
