@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>main_window</class>
+ <widget class="QMainWindow" name="main_window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>340</width>
+    <height>183</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PveLauncher</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QListView" name="listView">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>251</width>
+      <height>161</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_launcher">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Launch</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_status">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>0</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Offline(0)</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_edit">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>50</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Edit</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_add">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>80</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_delete">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>110</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_clear_cache">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>140</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear Cache</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>btn_launcher</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_launch()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>273</x>
+     <y>34</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>257</x>
+     <y>36</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_edit</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_edit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>257</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_add</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_add()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>288</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>302</x>
+     <y>107</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_delete</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_delete()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>285</x>
+     <y>127</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>258</x>
+     <y>139</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_clear_cache</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_clear_cache()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>308</x>
+     <y>154</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>337</x>
+     <y>136</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>func_launch()</slot>
+  <slot>func_edit()</slot>
+  <slot>func_add()</slot>
+  <slot>func_delete()</slot>
+  <slot>func_clear_cache()</slot>
+ </slots>
+</ui>

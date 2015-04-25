@@ -137,6 +137,7 @@ class EulaParser(HTMLParser):
     def handle_data(self, data):
         pass
 
+
 class EveLoginManager(AutoStr):
     useragent = 'EVEOnlineLauncher/2.2.859950'
     url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3" \
@@ -162,6 +163,7 @@ class EveLoginManager(AutoStr):
                           "/ssoToken={0}".format(account.client_token.token),
                           "/triPlatform={0}".format(account.direct_x)],
                          cwd=account.eve_path)
+
 
     @staticmethod
     def bearer_url_from_eve_account(cookie_proc, coder, eve_account):
@@ -194,7 +196,6 @@ class EveLoginManager(AutoStr):
 
     @staticmethod
     def bearer_token_from_url(url):
-        print(url)
         parsed_token_url = urllib.parse.urlparse(url)
         params = urllib.parse.parse_qs(parsed_token_url.fragment)
 
@@ -249,21 +250,11 @@ class EveLoginManager(AutoStr):
 
     def del_account(self, login_name):
         del self.accounts[login_name]
-        print(self.accounts)
         if (EveLoginManager.db_acc_prefix + login_name) in self.db:
             del self.db[EveLoginManager.db_acc_prefix + login_name]
 
     def login(self, loginname):
         account = self.accounts[loginname]
-
-        # lets check if there is still a valid token
-        if account.client_token is not None:
-            date_now = datetime.datetime.now(datetime.timezone.utc)
-            time_left = account.client_token.expiration - date_now
-
-            if time_left > EveLoginManager.client_min_timedelta:
-                EveLoginManager.do_login(account)
-                return True
 
         cookies = http.cookiejar.CookieJar()
         cookie_proc = urllib.request.HTTPCookieProcessor(cookies)
@@ -277,7 +268,6 @@ class EveLoginManager(AutoStr):
                 except URLError as e:
                     raise e
                 else:
-                    print("Tokens received successful")
                     account.client_token = client_token
                     EveLoginManager.do_login(account)
                     return True

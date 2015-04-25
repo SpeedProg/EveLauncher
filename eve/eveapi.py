@@ -31,7 +31,6 @@ class ShelveCache():
 
 
 class ApiElement():
-
     element_name = "basic"
 
     def __init__(self, api_name):
@@ -44,6 +43,7 @@ class ApiElement():
     """
         margin: in seconds
     """
+
     def is_good(self, margin=0):
         time_delta = timedelta(0, margin)
         current_time = datetime.now(timezone.utc)
@@ -51,7 +51,6 @@ class ApiElement():
 
 
 class ServerStatusApi(ApiElement):
-
     element_name = "server_status"
 
     def __init__(self):
@@ -75,7 +74,7 @@ class ServerStatusApi(ApiElement):
                 self.parse_cached_until(child)
 
         time_delta = self.cached_until - self.current_time
-        good_until = datetime.now(timezone.utc)+time_delta
+        good_until = datetime.now(timezone.utc) + time_delta
         self.set_good_until(good_until)
 
     def parse_current_time(self, element):
@@ -90,10 +89,10 @@ class ServerStatusApi(ApiElement):
                 self.parse_online_players(child)
 
     def parse_server_open(self, element):
-            if element.text == 'True':
-                self.server_open = True
-            else:
-                self.server_open = False
+        if element.text == 'True':
+            self.server_open = True
+        else:
+            self.server_open = False
 
     def parse_online_players(self, element):
         self.online_players = int(element.text)

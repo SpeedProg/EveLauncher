@@ -5,15 +5,13 @@ from tkinter import messagebox, END
 import os
 from urllib.error import *
 import urllib.request as request
-
-from eve.account import EveLoginManager, EveAccount
-from gui.newaccountdialog import AccountDialog
-
 from threading import Thread
-
 import configparser
 import re
 from tkinter.messagebox import showinfo
+
+from eve.account import EveLoginManager, EveAccount
+from gui.newaccountdialog import AccountDialog
 
 
 def gui_edit():
@@ -80,6 +78,7 @@ def init(top, gui, crypter):
     version_thread = Thread(target=check_eve_version)
     version_thread.start()
 
+
 def check_eve_version():
     headers = {'User-Agent': EveLoginManager.useragent}
     version_url = "http://client.eveonline.com/patches/premium_patchinfoTQ_inc.txt"
@@ -102,13 +101,13 @@ def check_eve_version():
     if len(out_of_date_eves) > 0:
         info_msg = "Folloing Eve Clients are out of date:"
         for path in out_of_date_eves:
-                info_msg += "\n" + path
+            info_msg += "\n" + path
         showinfo("Eve Clients out of date", info_msg)
 
 
 def check_eve_version_for_account(current_version, account):
     config = configparser.ConfigParser()
-    config.read(account.eve_path+"start.ini")
+    config.read(account.eve_path + "start.ini")
     local_version = config['main']['build']
     local_version = local_version.strip()
     print("remote build: " + current_version + " -> local: " + local_version)
@@ -116,7 +115,6 @@ def check_eve_version_for_account(current_version, account):
         return False
 
     return True
-
 
 
 def close():

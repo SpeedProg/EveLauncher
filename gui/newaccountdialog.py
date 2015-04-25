@@ -45,7 +45,7 @@ class AccountDialog(gui.tksimpledialog.Dialog):
 
         # def select_eve_path(self, event):
 
-    #        if event.widget == self.entry_path:
+    # if event.widget == self.entry_path:
     #            self.path
     #            res = os.path.normpath(askdirectory(initialdir=self.path))
     #           self.path = res

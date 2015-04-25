@@ -10,8 +10,8 @@
 For now, the demo at the bottom shows how to use it...'''
 
 import os
-
 import win32api
+
 import win32con
 import win32gui_struct
 
@@ -146,7 +146,7 @@ class SysTrayIcon(object):
     def show_menu(self):
         menu = win32gui.CreatePopupMenu()
         self.create_menu(menu, self.menu_options)
-        #win32gui.SetMenuDefaultItem(menu, 1000, 0)
+        # win32gui.SetMenuDefaultItem(menu, 1000, 0)
 
         pos = win32gui.GetCursorPos()
         # See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/menus_0hdi.asp

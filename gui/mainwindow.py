@@ -9,6 +9,7 @@ from tkinter.ttk import *
 
 from gui import mainwindow_support
 
+
 w = None
 
 
@@ -105,7 +106,7 @@ class AutoScroll(object):
     '''Configure the scrollbars for a widget.'''
 
     def __init__(self, master):
-        #  Rozen. Added the try-except clauses so that this class
+        # Rozen. Added the try-except clauses so that this class
         #  could be used for scrolled entry widget for which vertical
         #  scrolling is not supported. 5/7/14.
         try:

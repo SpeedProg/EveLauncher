@@ -2,18 +2,20 @@
 import argparse
 import os
 from tkinter import *
+import threading
+from threading import Thread
+
+from PySide.QtGui import QApplication
 
 from eve.account import *
 from gui import mainwindow
 from gui import mainwindow_support
-import threading
 from eve.eveapi import EveApi
-
 from gui.systrayicon import SysTrayIcon
-from threading import Thread
+from gui.qt.window import ControlMainWindow
 
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 
 def add(args):
@@ -72,7 +74,8 @@ class GuiStarter():
             self.root.state("withdrawn")
 
     def start_gui(self):
-        self.timer = threading.Timer(0.001, self.update_server_status, kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
+        self.timer = threading.Timer(0.001, self.update_server_status,
+                                     kwargs={'window': self.pvelauncher, 'api': self.eve_api}).start()
         self.root.mainloop()
         if self.timer is not None:
             self.timer.cancel()
@@ -91,6 +94,16 @@ class GuiStarter():
         self.timer.start()
 
 
+class QtStarter():
+    def __init__(self, crypter):
+        self.app = QApplication(sys.argv)
+        self.window = ControlMainWindow(crypter)
+
+    def start_gui(self):
+        self.window.show()
+        sys.exit(self.app.exec_())
+
+
 def vp_start_gui(crypt):
     gui_starter = GuiStarter(crypt)
     gui_starter.start_gui()
@@ -98,7 +111,9 @@ def vp_start_gui(crypt):
 
 def gui(args):
     crypt = Coding(args.encryption.encode('utf-8'))
-    vp_start_gui(crypt)
+    # vp_start_gui(crypt)
+    starter = QtStarter(crypt)
+    starter.start_gui()
 
 
 def entry():
