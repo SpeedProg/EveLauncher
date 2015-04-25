@@ -109,7 +109,10 @@ class QtStarter():
         self.timer = threading.Timer(0.001, self.update_server_status,
                                      kwargs={'window': self.window, 'api': self.eve_api}).start()
         self.window.show()
-        sys.exit(self.app.exec_())
+        ret = self.app.exec_()
+        if self.timer is not None:
+            self.timer.cancel()
+        return ret
 
     def update_server_status(self, window, api):
         status = api.get_server_status()

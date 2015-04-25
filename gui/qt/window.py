@@ -131,9 +131,10 @@ class ControlMainWindow(QtGui.QMainWindow):
         self.login_manager.clear_cache()
 
     def activate(self, reason):
-        print(reason)
         if reason == 2:
             self.show()
+            self.setWindowState(Qt.WindowNoState)
+            self.activateWindow()
 
     def check_eve_version(self):
         headers = {'User-Agent': EveLoginManager.useragent}
