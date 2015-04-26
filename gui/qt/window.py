@@ -164,7 +164,7 @@ class ControlMainWindow(QtGui.QMainWindow):
 
     def set_server_status(self, text, number):
         self.ui.label_server_status.setText(
-            QtGui.QApplication.translate("main_window", "Offline", None, QtGui.QApplication.UnicodeUTF8)
+            QtGui.QApplication.translate("main_window", text, None, QtGui.QApplication.UnicodeUTF8)
             + "({0:d})".format(number))
 
 
