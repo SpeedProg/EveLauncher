@@ -115,13 +115,18 @@ class QtStarter():
         return ret
 
     def update_server_status(self, window, api):
-        status = api.get_server_status()
-        if status.server_open:
-            status_text = "Online"
-        else:
-            status_text = "Offline"
+        try:
+            status = api.get_server_status()
+            if status.server_open:
+                status_text = "Online"
+            else:
+                status_text = "Offline"
 
-        window.set_server_status(status_text, status.online_players)
+            window.set_server_status(status_text, status.online_players)
+
+        except URLError as e:
+            window.set_server_status(e.msg, 0)
+
         self.timer = threading.Timer(10.0, self.update_server_status, kwargs={'window': window, 'api': api})
         self.timer.start()
 
