@@ -5,7 +5,7 @@ import py2exe
 setup(
     name='Python Launcher for EvE',
     description="Commandline Launcher for Eve",
-    version="0.0.8",
+    version="0.0.10",
     windows=['PveLauncher.py'],
     console=[{'script': 'PveConsole.py'}],
     options={'py2exe': {

@@ -11,7 +11,7 @@ from PySide.QtGui import QApplication
 
 from eve.account import *
 
-from gui.qt.window import ControlMainWindow
+from gui.qt.window import ControlMainWindow, QtSingleApplication
 import sys
 
 import threading
@@ -19,7 +19,7 @@ from threading import Thread
 from eve.eveapi import EveApi
 
 
-__version__ = "0.0.8"
+__version__ = "0.0.10"
 
 
 def add(args):
@@ -100,7 +100,9 @@ def login(args):
 
 class QtStarter():
     def __init__(self, crypter):
-        self.app = QApplication(sys.argv)
+        self.app = QtSingleApplication('17660D78-290B-4282-8741-24595B156CB1', sys.argv)
+        if self.app.isRunning():
+            sys.exit(0)
         self.window = ControlMainWindow(crypter)
         self.eve_api = EveApi()
         self.timer = None

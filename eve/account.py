@@ -138,6 +138,42 @@ class EulaParser(HTMLParser):
         pass
 
 
+class AuthSiteParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.auth_secret = None
+        self.command = None
+        self.return_url = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'input':
+            id_val = self.get_attr_from_attrs(attrs, 'id')
+            if id_val is not None:
+                if id_val == 'AuthenticatorSecret':
+                    self.auth_secret = self.get_attr_from_attrs(attrs, 'value')
+
+            name_val = self.get_attr_from_attrs(attrs, 'name')
+
+            if name_val is not None:
+                if name_val == 'command':
+                    classes = self.get_attr_from_attrs(attrs, 'class')
+                    if 'continue' in classes:
+                        self.command = self.get_attr_from_attrs(attrs, 'value')
+
+    @staticmethod
+    def get_attr_from_attrs(attrs, attr):
+        for a in attrs:
+            if a[0] == attr:
+                return a[1]
+        return None
+
+    def handle_endtag(self, tag):
+        pass
+
+    def handle_data(self, data):
+        pass
+
+
 class EveLoginManager(AutoStr):
     useragent = 'EVEOnlineLauncher/2.2.859950'
     url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3" \
@@ -152,6 +188,9 @@ class EveLoginManager(AutoStr):
                "response_type=token&redirect_uri=https://login.eveonline.com/launcher?" \
                "client_id=eveLauncherTQ&scope=eveClientToken"
     url_post_eula = "https://login.eveonline.com/OAuth/Eula"
+    url_auth_code = "https://login.eveonline.com/Account/Authenticator?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
+    url_send_auth_mail = "/Account/AuthenticationMail?returnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
+
 
     bearer_min_timedelta = datetime.timedelta(0, 20, 0, 0, 0, 0, 0)  # 20s
     client_min_timedelta = datetime.timedelta(0, 20, 0, 0, 0, 0, 0)  # 20s
@@ -164,9 +203,12 @@ class EveLoginManager(AutoStr):
                           "/triPlatform={0}".format(account.direct_x)],
                          cwd=account.eve_path)
 
-
     @staticmethod
     def bearer_url_from_eve_account(cookie_proc, coder, eve_account):
+        """
+            return 0, url if logged in
+            return 1, response, url_data if auth is needed
+        """
         opener = urllib.request.build_opener(cookie_proc)
 
         post_data = {'UserName': eve_account.login_name,
@@ -178,6 +220,10 @@ class EveLoginManager(AutoStr):
                                          EveLoginManager.bearer_headers)
 
         response = opener.open(request)
+        url_data = response.read().decode('utf-8')
+        if 'class="checkbox authenticator-checkbox"' in url_data:  # need auth token
+            return 1, response, url_data
+
         url = response.geturl()
         if url == EveLoginManager.url_eula:
             eula_html = response.read()
@@ -192,7 +238,7 @@ class EveLoginManager(AutoStr):
             request = urllib.request.Request(EveLoginManager.url_post_eula, encoded_post_data, headers)
             response = opener.open(request)
 
-        return response.geturl()
+        return 0, response.geturl()
 
     @staticmethod
     def bearer_token_from_url(url):
@@ -253,7 +299,7 @@ class EveLoginManager(AutoStr):
         if (EveLoginManager.db_acc_prefix + login_name) in self.db:
             del self.db[EveLoginManager.db_acc_prefix + login_name]
 
-    def login(self, loginname):
+    def login(self, loginname, auth_code_cb):
         account = self.accounts[loginname]
 
         cookies = http.cookiejar.CookieJar()
@@ -273,8 +319,30 @@ class EveLoginManager(AutoStr):
                     return True
 
         try:
-            bearer_token = EveLoginManager.bearer_token_from_url(
-                EveLoginManager.bearer_url_from_eve_account(cookie_proc, self.coder, account))
+            ret_data = EveLoginManager.bearer_url_from_eve_account(cookie_proc, self.coder, account)
+            token_url = ""
+            if ret_data[0] == 1:
+                parser = AuthSiteParser()
+                parser.feed(ret_data[2])
+                auth_code = auth_code_cb(EveLoginManager.url_send_auth_mail)
+                if auth_code[1]:
+                    post_data = [('Challenge', auth_code[0]), ('RememberTwoFactor', 'true'),
+                                 ('RememberTwoFactor', 'false'), ('AuthenticatorSecret', parser.auth_secret),
+                                 ('command', parser.command)]
+                    headers = {'User-Agent': EveLoginManager.useragent,
+                               'Origin': 'https://login.eveonline.com',
+                               'Referer': ret_data[1].geturl(),
+                               'Content-Type': 'application/x-www-form-urlencoded'}
+                    encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
+                    request = urllib.request.Request(EveLoginManager.url_auth_code, encoded_post_data, headers)
+                    opener = urllib.request.build_opener(cookie_proc)
+                    response = opener.open(request)
+                    token_url = response.geturl()
+                else:
+                    return False
+            else:
+                token_url = ret_data[1]
+            bearer_token = EveLoginManager.bearer_token_from_url(token_url)
             account.bearer_token = bearer_token
             client_token = EveLoginManager.client_token_from_bearer_token(cookie_proc, bearer_token)
             account.client_token = client_token
