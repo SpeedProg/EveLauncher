@@ -165,7 +165,7 @@ class ControlMainWindow(QtGui.QMainWindow):
                 self.login_manager.login(idx.data(), self.get_auth_code)
             except Exception as e:
                 invoke_in_main_thread(QtGui.QMessageBox.critical, self, "Launch Error",
-                                      e.msg, QtGui.QMessageBox.Ok)
+                                      e.__str__(), QtGui.QMessageBox.Ok)
 
     def func_edit(self):
         indexes = self.ui.listView.selectedIndexes()
@@ -247,14 +247,29 @@ class ControlMainWindow(QtGui.QMainWindow):
             QtGui.QApplication.translate("main_window", text, None, QtGui.QApplication.UnicodeUTF8)
             + "({0:d})".format(number))
 
-    def get_auth_code(self, mailurl):
+    def get_auth_code(self, opener, request):
         """
         :param mailurl: url to call for sending an authcode per mail
         :return: the authcode
         """
-        print(mailurl)
-        return QtGui.QInputDialog.getText(self, "TwoFactorAuth", "Please enter your Authcode")
+        inputDialog = QtGui.QInputDialog(self)
+        inputDialog.setInputMode(QtGui.QInputDialog.TextInput)
+        inputDialog.setCancelButtonText("Send Auth Mail")
+        inputDialog.setLabelText("Please enter your Authcode")
+        inputDialog.setWindowTitle("TwoFactorAuth")
+        inputDialog.setModal(True)
 
+        response = None
+
+        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:  # send mail
+            response = opener.open(request)
+        else:
+            return response, inputDialog.textValue().strip()
+
+        inputDialog.setCancelButtonText("Cancel")
+        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
+            return response, None
+        return response, inputDialog.textValue().strip()
 
 def check_eve_version_for_account(current_version, account):
     config = configparser.ConfigParser()

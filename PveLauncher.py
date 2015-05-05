@@ -147,6 +147,7 @@ def gui(args):
 
 def entry():
     crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
+    #  http.client.HTTPConnection.debuglevel = 1  # debug requests
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--encryption",
                         help="Key used for password encryption/decryption, if not given uses default",
