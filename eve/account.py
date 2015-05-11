@@ -176,9 +176,13 @@ class AuthSiteParser(HTMLParser):
 
 class EveLoginManager(AutoStr):
     useragent = 'EVEOnlineLauncher/2.2.859950'
-    url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3" \
-                       + "DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
-                       + "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken"
+    #  base path https://client.eveonline.com/launcherv3/en?steam_token=&server=tranquility
+
+
+    base_url = "https://login.eveonline.com"
+    url_char_challenge = "/Account/Challenge?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user"
+    url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3DeveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2Flogin.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user"
+
     url_client_token = "https://login.eveonline.com/launcher/token?accesstoken="
     bearer_headers = {'User-Agent': useragent,
                       'Origin': 'https://login.eveonline.com',
@@ -209,6 +213,7 @@ class EveLoginManager(AutoStr):
         """
             return 0, url if logged in
             return 1, response, url_data if auth is needed
+            return 2, response, url_data if char is needed
         """
         opener = urllib.request.build_opener(cookie_proc)
 
@@ -224,6 +229,9 @@ class EveLoginManager(AutoStr):
         url_data = response.read().decode('utf-8')
         if 'class="checkbox authenticator-checkbox"' in url_data:  # need auth token
             return 1, response, url_data
+
+        if EveLoginManager.url_char_challenge in url_data:  # need account char name
+            return 2, response, url_data
 
         url = response.geturl()
         if url == EveLoginManager.url_eula:
@@ -252,7 +260,7 @@ class EveLoginManager(AutoStr):
 
             return BearerToken(params['access_token'][0], date_now + expires_in)
         else:
-            raise HTTPError(url, 403, "Login data wrong!", "", "")
+            raise HTTPError(url, 403, "Login data wrong! "+url, "", "")
 
     @staticmethod
     def client_token_from_bearer_token(cookie_proc, bearer_token):
@@ -300,7 +308,7 @@ class EveLoginManager(AutoStr):
         if (EveLoginManager.db_acc_prefix + login_name) in self.db:
             del self.db[EveLoginManager.db_acc_prefix + login_name]
 
-    def login(self, loginname, auth_code_cb):
+    def login(self, loginname, auth_code_cb, charname_cb):
         account = self.accounts[loginname]
 
         cookies = http.cookiejar.CookieJar()
@@ -359,6 +367,21 @@ class EveLoginManager(AutoStr):
                     opener = urllib.request.build_opener(cookie_proc)
                     response = opener.open(request)
                     token_url = response.geturl()
+                elif 2:  # we need charname
+                    char_name = charname_cb()
+                    if char_name is not None:
+                        post_data = [('Challenge', char_name), ('command', 'Continue')]
+                        refurl = ret_data[1].geturl()
+                        headers = {'User-Agent': EveLoginManager.useragent,
+                               'Origin': 'https://login.eveonline.com',
+                               'Referer': refurl,
+                               'Content-Type': 'application/x-www-form-urlencoded'}
+                        encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
+                        request = urllib.request.Request(EveLoginManager.base_url+EveLoginManager.url_char_challenge,
+                                                         encoded_post_data, headers)
+                        opener = urllib.request.build_opener(cookie_proc)
+                        response = opener.open(request)
+                        token_url = response.geturl()
                 else:
                     return False
             else:

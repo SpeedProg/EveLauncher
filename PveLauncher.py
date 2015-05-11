@@ -19,7 +19,7 @@ from threading import Thread
 from eve.eveapi import EveApi
 
 
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 
 
 def add(args):

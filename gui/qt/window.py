@@ -162,7 +162,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         # i get QModelIndex here
         for idx in indexes:
             try:
-                self.login_manager.login(idx.data(), self.get_auth_code)
+                self.login_manager.login(idx.data(), self.get_auth_code, self.get_charname)
             except Exception as e:
                 invoke_in_main_thread(QtGui.QMessageBox.critical, self, "Launch Error",
                                       e.__str__(), QtGui.QMessageBox.Ok)
@@ -270,6 +270,24 @@ class ControlMainWindow(QtGui.QMainWindow):
         if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
             return response, None
         return response, inputDialog.textValue().strip()
+
+    def get_charname(self):
+        """
+        :param mailurl: url to call for sending an authcode per mail
+        :return: the authcode
+        """
+        inputDialog = QtGui.QInputDialog(self)
+        inputDialog.setInputMode(QtGui.QInputDialog.TextInput)
+        inputDialog.setLabelText("Please enter a Charname")
+        inputDialog.setWindowTitle("Charname Challange")
+        inputDialog.setModal(True)
+
+        response = None
+
+        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
+            return None
+
+        return inputDialog.textValue().strip()
 
 def check_eve_version_for_account(current_version, account):
     config = configparser.ConfigParser()
