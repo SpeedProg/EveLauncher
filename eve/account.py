@@ -367,21 +367,23 @@ class EveLoginManager(AutoStr):
                     opener = urllib.request.build_opener(cookie_proc)
                     response = opener.open(request)
                     token_url = response.geturl()
-                elif 2:  # we need charname
-                    char_name = charname_cb()
-                    if char_name is not None:
-                        post_data = [('Challenge', char_name), ('command', 'Continue')]
-                        refurl = ret_data[1].geturl()
-                        headers = {'User-Agent': EveLoginManager.useragent,
-                               'Origin': 'https://login.eveonline.com',
-                               'Referer': refurl,
-                               'Content-Type': 'application/x-www-form-urlencoded'}
-                        encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
-                        request = urllib.request.Request(EveLoginManager.base_url+EveLoginManager.url_char_challenge,
-                                                         encoded_post_data, headers)
-                        opener = urllib.request.build_opener(cookie_proc)
-                        response = opener.open(request)
-                        token_url = response.geturl()
+                else:
+                    return False
+            elif 2:  # we need charname
+                char_name = charname_cb()
+                if char_name is not None:
+                    post_data = [('Challenge', char_name), ('command', 'Continue')]
+                    refurl = ret_data[1].geturl()
+                    headers = {'User-Agent': EveLoginManager.useragent,
+                           'Origin': 'https://login.eveonline.com',
+                           'Referer': refurl,
+                           'Content-Type': 'application/x-www-form-urlencoded'}
+                    encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
+                    request = urllib.request.Request(EveLoginManager.base_url+EveLoginManager.url_char_challenge,
+                                                     encoded_post_data, headers)
+                    opener = urllib.request.build_opener(cookie_proc)
+                    response = opener.open(request)
+                    token_url = response.geturl()
                 else:
                     return False
             else:
