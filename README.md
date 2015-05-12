@@ -11,6 +11,9 @@ A simple python eve launcher, supporting Two Factor Authentication and Evepath p
  * Encrypted passwords (password for encryption can be set using a command line option, or defaults to a static one)
 
 
+## Download
+https://github.com/SpeedProg/PveLauncher/releases
+
 ## Pictures
 Main Window:
 
