@@ -369,7 +369,7 @@ class EveLoginManager(AutoStr):
                     token_url = response.geturl()
                 else:
                     return False
-            elif 2:  # we need charname
+            elif ret_data[0] == 2:  # we need charname
                 char_name = charname_cb()
                 if char_name is not None:
                     post_data = [('Challenge', char_name), ('command', 'Continue')]
