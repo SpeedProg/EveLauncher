@@ -14,7 +14,7 @@ w = None
 
 
 def create_pvelauncher(root, param=None):
-    '''Starting point when module is imported by another program.'''
+    """Starting point when module is imported by another program."""
     global w, w_win, rt
     rt = root
     w = Toplevel(root)
@@ -103,7 +103,7 @@ class PveLauncher:
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
-    '''Configure the scrollbars for a widget.'''
+    """Configure the scrollbars for a widget."""
 
     def __init__(self, master):
         # Rozen. Added the try-except clauses so that this class
@@ -142,7 +142,7 @@ class AutoScroll(object):
 
     @staticmethod
     def _autoscroll(sbar):
-        '''Hide and show scrollbar as needed.'''
+        """Hide and show scrollbar as needed."""
 
         def wrapped(first, last):
             first, last = float(first), float(last)
@@ -159,8 +159,8 @@ class AutoScroll(object):
 
 
 def _create_container(func):
-    '''Creates a ttk Frame with a given master, and use this new frame to
-    place the scrollbars and the widget.'''
+    """Creates a ttk Frame with a given master, and use this new frame to
+    place the scrollbars and the widget."""
 
     def wrapped(cls, master, **kw):
         container = Frame(master)
@@ -170,8 +170,8 @@ def _create_container(func):
 
 
 class ScrolledListBox(AutoScroll, Listbox):
-    '''A standard Tkinter Text widget with scrollbars that will
-    automatically show/hide as needed.'''
+    """A standard Tkinter Text widget with scrollbars that will
+    automatically show/hide as needed."""
 
     @_create_container
     def __init__(self, master, **kw):

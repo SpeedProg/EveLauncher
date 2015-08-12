@@ -34,7 +34,7 @@ def gui_login():
     items = map(int, w.acc_list.curselection())
     for idx in items:
         try:
-            login_manager.login(w.acc_list.get(idx))
+            login_manager.login(w.acc_list.get(idx))  # TODO: write console cbs
         except URLError as e:
             messagebox.showerror("Error", e.msg)
 

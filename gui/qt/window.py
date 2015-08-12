@@ -79,7 +79,7 @@ class QtSingleApplication(QApplication):
     def activationWindow(self):
         return self._activationWindow
 
-    def setActivationWindow(self, activationWindow, activateOnMessage = True):
+    def setActivationWindow(self, activationWindow, activateOnMessage=True):
         self._activationWindow = activationWindow
         self._activateOnMessage = activateOnMessage
 
@@ -213,8 +213,8 @@ class ControlMainWindow(QtGui.QMainWindow):
             self.showNormal()
             self.raise_()
             self.activateWindow()
-            #self.setWindowState(Qt.WindowNoState)
-            #self.activateWindow()
+            # self.setWindowState(Qt.WindowNoState)
+            # self.activateWindow()
 
     def check_eve_version(self):
         headers = {'User-Agent': EveLoginManager.useragent}
@@ -249,7 +249,8 @@ class ControlMainWindow(QtGui.QMainWindow):
 
     def get_auth_code(self, opener, request):
         """
-        :param mailurl: url to call for sending an authcode per mail
+        :param opener: urllib.request.build_opener for sending an authcode per mail
+        :param request: request to send using the given opener
         :return: the authcode
         """
         inputDialog = QtGui.QInputDialog(self)
@@ -282,12 +283,11 @@ class ControlMainWindow(QtGui.QMainWindow):
         inputDialog.setWindowTitle("Charname Challange")
         inputDialog.setModal(True)
 
-        response = None
-
         if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
             return None
 
         return inputDialog.textValue().strip()
+
 
 def check_eve_version_for_account(current_version, account):
     config = configparser.ConfigParser()
@@ -299,10 +299,3 @@ def check_eve_version_for_account(current_version, account):
             return False
 
     return True
-
-
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    mySW = ControlMainWindow()
-    mySW.show()
-    sys.exit(app.exec_())

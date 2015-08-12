@@ -39,7 +39,7 @@ def login(args):
     crypt = Coding(args.encryption.encode('utf-8'))
     login_manager = EveLoginManager(crypt)
     login_manager.load()
-    login_manager.login(args.username)
+    login_manager.login(args.username)  # TODO: write console cbs
 #
 #
 # class GuiStarter():
@@ -98,7 +98,7 @@ def login(args):
 #         self.timer.start()
 
 
-class QtStarter():
+class QtStarter:
     def __init__(self, crypter):
         self.app = QtSingleApplication('17660D78-290B-4282-8741-24595B156CB1', sys.argv)
         if self.app.isRunning():
