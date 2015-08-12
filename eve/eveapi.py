@@ -1,36 +1,33 @@
+from urllib.error import URLError
+
 __author__ = 'SpeedProg'
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from datetime import datetime, timedelta, timezone
 import shelve
 import urllib.request
 
 
-class ShelveCache():
+class ShelveCache:
     def __init__(self, filename):
         self.filename = filename
-        self.db = None
-
-    def open(self):
-        self.db = shelve.open(self.filename)
-
-    def close(self):
-        self.db.close()
 
     def set_api_element(self, element):
-        self.db[element.api_name] = element
+        with shelve.open(self.filename) as db:
+            db[element.api_name] = element
 
     def get_api_element(self, element_name):
-        if element_name in self.db:
-            element = self.db[element_name]
-            if element.is_good():
-                return element
+        with shelve.open(self.filename) as db:
+            if element_name in db:
+                element = db[element_name]
+                if element.is_good():
+                    return element
 
-            return None
-        else:
-            return None
+                return None
+            else:
+                return None
 
 
-class ApiElement():
+class ApiElement:
     element_name = "basic"
 
     def __init__(self, api_name):
@@ -56,8 +53,12 @@ class ServerStatusApi(ApiElement):
     def __init__(self):
         super().__init__(ServerStatusApi.element_name)
         self.url = "https://api.eveonline.com/server/ServerStatus.xml.aspx"
-        self.api_data = urllib.request.urlopen(self.url).read()
-        root = ET.fromstring(self.api_data)
+        try:
+            self.api_data = urllib.request.urlopen(self.url).read()
+        except URLError as e:
+            print(e)
+
+        root = ElementTree.fromstring(self.api_data)
         self.current_time = None
         self.server_open = False
         self.online_players = 0
@@ -101,19 +102,21 @@ class ServerStatusApi(ApiElement):
         self.cached_until = datetime.strptime(element.text, "%Y-%m-%d %H:%M:%S")
 
 
-class EveApi():
+class EveApi:
     def __init__(self):
         self.cache = ShelveCache("api_cache")
-        self.cache.open()
 
     def get_server_status(self):
-        element = self.cache.get_api_element(ServerStatusApi.element_name)
+        try:
+            element = self.cache.get_api_element(ServerStatusApi.element_name)
+        except EOFError:
+            element = ServerStatusApi()
+            self.cache.set_api_element(element)
+            return element
+
         if element is not None:
             return element
 
         element = ServerStatusApi()
         self.cache.set_api_element(element)
         return element
-
-    def close(self):
-        self.cache.close()

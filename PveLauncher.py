@@ -126,8 +126,8 @@ class QtStarter():
 
             window.set_server_status(status_text, status.online_players)
 
-        except URLError as e:
-            window.set_server_status(e.reason, 0)
+        except URLError:
+            window.set_server_status("Failed ", 0)
 
         self.timer = threading.Timer(10.0, self.update_server_status, kwargs={'window': window, 'api': api})
         self.timer.start()
