@@ -9,7 +9,7 @@ import os
 from queue import Queue
 
 from PySide import QtGui
-from PySide.QtGui import QApplication
+from PySide.QtGui import QApplication, QSystemTrayIcon, QMessageBox
 from PySide.QtCore import QTimer, QEvent, SLOT, QTextStream
 from PySide.QtCore import QMetaObject, Slot, Qt, QObject, Signal
 from PySide.QtNetwork import *
@@ -209,7 +209,7 @@ class ControlMainWindow(QtGui.QMainWindow):
         self.login_manager.clear_cache()
 
     def activate(self, reason):
-        if reason == 2:
+        if reason == QSystemTrayIcon.Trigger or reason == QSystemTrayIcon.DoubleClick:
             self.showNormal()
             self.raise_()
             self.activateWindow()
