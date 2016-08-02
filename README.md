@@ -1,3 +1,5 @@
+# This Launcher was DISCONTINUED, because the NEW Official Eve-Launcher has all the Features this one was implementing
+
 # PveLauncher
 A simple python eve launcher, supporting Two Factor Authentication and Evepath per account
 
