@@ -1,5 +1,9 @@
 # This Launcher was DISCONTINUED, because the NEW Official Eve-Launcher has all the Features this one was implementing
 
+IT WORKS THROUGH (FOR NOW), because eve launcher is still bad. Didn't allow to accept EULA today. So I updated my own to get into eve.
+Might update this one to support new features now actually.
+
+
 # PveLauncher
 A simple python eve launcher, supporting Two Factor Authentication and Evepath per account
 
