@@ -218,29 +218,29 @@ class ControlMainWindow(QtGui.QMainWindow):
 
     def check_eve_version(self):
         headers = {'User-Agent': EveLoginManager.useragent}
-        version_url = "http://client.eveonline.com/patches/premium_patchinfoTQ_inc.txt"
-        req = request.Request(version_url, headers=headers)
-        response = request.urlopen(req)
-        version_data = response.read().decode('utf-8')
-        match = re.match("BUILD:(\\d+)", version_data)
+        #version_url = "http://client.eveonline.com/patches/premium_patchinfoTQ_inc.txt"
+        #req = request.Request(version_url, headers=headers)
+        #response = request.urlopen(req)
+        #version_data = response.read().decode('utf-8')
+        #match = re.match("BUILD:(\\d+)", version_data)
 
-        if match is None:
-            return None
+        #if match is None:
+        #    return None
 
-        version_string = match.group(1)
-        version_string = version_string.strip()
+        #version_string = match.group(1)
+        #version_string = version_string.strip()
         out_of_date_eves = []
-        for acc in self.login_manager.accounts:
-            up_to_date = check_eve_version_for_account(version_string, self.login_manager.accounts[acc])
-            if not up_to_date:
-                out_of_date_eves.append(self.login_manager.accounts[acc].eve_path)
+        #for acc in self.login_manager.accounts:
+        #    up_to_date = check_eve_version_for_account(version_string, self.login_manager.accounts[acc])
+        #    if not up_to_date:
+        #        out_of_date_eves.append(self.login_manager.accounts[acc].eve_path)
 
-        if len(out_of_date_eves) > 0:
-            info_msg = "Folloing Eve Clients are out of date:"
-            for path in out_of_date_eves:
-                info_msg += "\n" + path
-            invoke_in_main_thread(QtGui.QMessageBox.information, self, "Eve Clients out of date",
-                                  info_msg, QtGui.QMessageBox.Ok)
+        #if len(out_of_date_eves) > 0:
+        #    info_msg = "Folloing Eve Clients are out of date:"
+        #    for path in out_of_date_eves:
+        #        info_msg += "\n" + path
+        #    invoke_in_main_thread(QtGui.QMessageBox.information, self, "Eve Clients out of date",
+        #                          info_msg, QtGui.QMessageBox.Ok)
 
     def set_server_status(self, text, number):
         self.ui.label_server_status.setText(
