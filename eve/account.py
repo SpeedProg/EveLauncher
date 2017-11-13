@@ -10,8 +10,10 @@ import hashlib
 import shelve
 from html.parser import HTMLParser
 
-from Crypto import Random
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
+import os
 
 from utils.classhelper import AutoStr
 
@@ -84,7 +86,7 @@ class Coding(AutoStr):
 
     @staticmethod
     def pkcs5_pad(s):
-        length = AES.block_size - (len(s) % AES.block_size)
+        length = algorithms.AES.block_size - (len(s) % algorithms.AES.block_size)
         for x in range(0, length):
             s += bytes([length])
 
@@ -96,15 +98,18 @@ class Coding(AutoStr):
 
     def encrypt(self, raw):
         raw = Coding.pkcs5_pad(raw)
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        enc = cipher.encrypt(raw)
+        iv = os.urandom(int(algorithms.AES.block_size/8))
+        cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=default_backend())
+        encrypt = cipher.encryptor()
+        enc = encrypt.update(raw) + encrypt.finalize()
         return iv + enc
 
     def decrypt(self, enc):
-        iv = enc[:AES.block_size]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        decrypted = cipher.decrypt(enc[AES.block_size:])
+        # first part is our iv
+        iv = enc[:int(algorithms.AES.block_size/8)]
+        cipher = Cipher(algorithms.AES(self.key), modes.CBC(iv), backend=default_backend())
+        decrypt = cipher.decryptor()
+        decrypted = decrypt.update(enc[int(algorithms.AES.block_size/8):]) + decrypt.finalize()
         unpadded = Coding.pkcs5_unpad(decrypted)
         return unpadded
 
@@ -177,7 +182,7 @@ class AuthSiteParser(HTMLParser):
 
 
 class EveLoginManager(AutoStr):
-    useragent = 'EVEOnlineLauncher/2.2.859950'
+    useragent = 'Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:41.0) Gecko/20170101 Firefox/41.0'
     #  base path https://client.eveonline.com/launcherv3/en?steam_token=&server=tranquility
 
     base_url = "https://login.eveonline.com"
@@ -196,7 +201,7 @@ class EveLoginManager(AutoStr):
     url_eula = "https://login.eveonline.com/oauth/authorize/?client_id=eveLauncherTQ&lang=en&" \
                "response_type=token&redirect_uri=https://login.eveonline.com/launcher?" \
                "client_id=eveLauncherTQ&scope=eveClientToken%20user"
-    url_post_eula = "https://login.eveonline.com/OAuth/Eula"
+    url_post_eula = "https://login.eveonline.com/oauth/eula"
     url_auth_code = "https://login.eveonline.com/Account/Authenticator?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3D" \
                     "eveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
                     "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user"
@@ -240,10 +245,10 @@ class EveLoginManager(AutoStr):
         print(response)
         url_data = response.read().decode('utf-8')
         print(url_data)
-        if 'class="checkbox authenticator-checkbox"' in url_data:  # need auth token
+        if '/account/authenticator?ReturnUrl' in url_data:  # need auth token
             return 1, response, url_data
 
-        if EveLoginManager.url_char_challenge in url_data:  # need account char name
+        if 'Account/Challenge?' in url_data:  # need account char name
             return 2, response, url_data
 
         return 0, response.geturl()
