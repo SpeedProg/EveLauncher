@@ -1,5 +1,6 @@
 # coding=utf-8
 import argparse
+import json
 import os
 #  from tkinter import *
 #  from gui import mainwindow
@@ -7,6 +8,7 @@ import os
 #
 #  from gui.systrayicon import SysTrayIcon
 from PySide2.QtWidgets import QInputDialog
+from os.path import exists
 
 from eve.account import *
 
@@ -19,6 +21,7 @@ from eve.eveapi import EveApi
 
 
 __version__ = "0.0.17"
+test_encryption_string = "fZaXMhmcxoCFCrpXNBHh"
 
 
 def add(args):
@@ -115,10 +118,15 @@ class QtStarter:
             input_dialog.setLabelText("Please enter your Masterpassword")
             input_dialog.setWindowTitle("Masterpassword")
             input_dialog.setModal(False)
-            if input_dialog.exec_() == QInputDialog.Rejected:
-                crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
-            else:
-                crypt_key = input_dialog.textValue().strip()
+            while crypt_key is None:
+                if input_dialog.exec_() == QInputDialog.Rejected:
+                    crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
+                else:
+                    crypt_key = input_dialog.textValue().strip()
+                if not QtStarter.check_master_password(crypt_key):
+                    crypt_key = None
+                    input_dialog.setLabelText("Wrong Masterpassword, try again!")
+        QtStarter.save_masterpassword_check(crypt_key)
         crypt = Coding(crypt_key.encode('utf-8'))
         self.window = ControlMainWindow(crypt)
         self.timer = threading.Timer(0.001, self.update_server_status,
@@ -128,6 +136,26 @@ class QtStarter:
         if self.timer is not None:
             self.timer.cancel()
         return ret
+
+    @staticmethod
+    def check_master_password(pw):
+        crypt = Coding(pw.encode('utf-8'))
+        try:
+            with open('pwcheck.json', 'r') as pw_file:
+                check = json.load(pw_file)
+            dec = crypt.decrypt(base64.b64decode(check['test'].encode('ascii'))).decode('utf-8')
+            return dec == test_encryption_string
+        except FileNotFoundError:
+            return True # no master pw was set yet (first start)
+
+    @staticmethod
+    def save_masterpassword_check(pw):
+        if not exists('pwcheck.json'):
+            crypt = Coding(pw.encode('utf-8'))
+            check = dict()
+            check['test'] = base64.b64encode(crypt.encrypt(test_encryption_string.encode('utf-8'))).decode('ascii')
+            with open('pwcheck.json', 'w') as pw_file:
+                json.dump(check, pw_file)
 
     def update_server_status(self, window, api):
         try:
