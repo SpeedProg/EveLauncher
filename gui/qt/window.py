@@ -1,3 +1,10 @@
+import json
+from PySide2 import QtGui
+
+from PySide2.QtCore import QObject, QMetaObject, Slot, Signal, QTextStream, QEvent, Qt, QTimer, SLOT, QDir
+from PySide2.QtNetwork import QLocalSocket, QLocalServer
+from PySide2.QtWidgets import QApplication, QSystemTrayIcon, QFileDialog, QMainWindow, QInputDialog, QMessageBox
+
 __author__ = 'SpeedProg'
 
 from threading import Thread
@@ -8,13 +15,7 @@ import re
 import os
 from queue import Queue
 
-from PySide import QtGui
-from PySide.QtGui import QApplication, QSystemTrayIcon, QMessageBox
-from PySide.QtCore import QTimer, QEvent, SLOT, QTextStream
-from PySide.QtCore import QMetaObject, Slot, Qt, QObject, Signal
-from PySide.QtNetwork import *
-
-from gui.qt.generated.main_window import Ui_MainWindow
+from gui.qt.generated.main_window import Ui_main_window
 from eve.account import EveLoginManager, EveAccount
 from gui.qt.account_dialog import AccountDialog
 
@@ -118,15 +119,15 @@ class QtSingleApplication(QApplication):
             self.messageReceived.emit(msg)
 
 
-class ControlMainWindow(QtGui.QMainWindow):
+class ControlMainWindow(QMainWindow):
     def __init__(self, crypter):
         super(ControlMainWindow, self).__init__(None)
-        self.icon = QtGui.QSystemTrayIcon()
+        self.icon = QSystemTrayIcon()
         self.icon.setIcon(QtGui.QIcon('./eve_tray.png'))
         self.icon.show()
         self.setWindowIcon(QtGui.QIcon('./eve_tray.png'))
         self.setWindowTitle('Pve Launcher')
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_main_window()
         self.ui.setupUi(self)
         self.icon.activated.connect(self.activate)
         self.account_list_model = QtGui.QStringListModel()
@@ -135,6 +136,11 @@ class ControlMainWindow(QtGui.QMainWindow):
         self.login_manager = EveLoginManager(crypter)
 
         self.init_none_ui(crypter)
+
+        self.settings = None
+        self.load_settings()
+        self.ui.txt_client_path.setText(self.settings['eve_path'])
+
 
     def init_none_ui(self, crypter):
 
@@ -147,8 +153,21 @@ class ControlMainWindow(QtGui.QMainWindow):
         version_thread = Thread(target=self.check_eve_version)
         version_thread.start()
 
+    def load_settings(self):
+        try:
+            with open('pvesettings.json', 'r') as settings_file:
+                self.settings = json.load(settings_file)
+        except FileNotFoundError:
+            self.settings = dict()
+            self.settings['eve_path'] = ""
+
+    def save_settings(self):
+        with open('pvesettings.json', 'w') as settings_file:
+            json.dump(self.settings, settings_file)
+
     def closeEvent(self, event):
         self.login_manager.save()
+        self.save_settings()
 
     def changeEvent(self, event):
         if event.type() == QEvent.WindowStateChange:
@@ -162,10 +181,11 @@ class ControlMainWindow(QtGui.QMainWindow):
         # i get QModelIndex here
         for idx in indexes:
             try:
-                self.login_manager.login(idx.data(), self.get_auth_code, self.get_charname)
+                self.login_manager.login(idx.data(), self.get_auth_code, self.get_charname,
+                                         self.ui.txt_client_path.text())
             except Exception as e:
-                invoke_in_main_thread(QtGui.QMessageBox.critical, self, "Launch Error",
-                                      e.__str__(), QtGui.QMessageBox.Ok)
+                invoke_in_main_thread(QMessageBox.critical, self, "Launch Error",
+                                      e.__str__(), QMessageBox.Ok)
 
     def func_edit(self):
         indexes = self.ui.listView.selectedIndexes()
@@ -173,25 +193,23 @@ class ControlMainWindow(QtGui.QMainWindow):
         for idx in indexes:
             account = self.login_manager.accounts[idx.data()]
             dialog = AccountDialog("Edit Account", account.login_name,
-                                   account.plain_password(self.login_manager.coder), account.direct_x, account.eve_path)
+                                   account.plain_password(self.login_manager.coder),
+                                   account.direct_x, account.profile_name)
             if dialog.show():
                 # result = [name, password, path, dx]:
                 path = dialog.result[2]
                 if not path.endswith(os.sep):
                     path = path + os.sep
-                account = EveAccount(dialog.result[0], dialog.result[1], self.login_manager.coder, path,
-                                     None, None, dialog.result[3])
+                account = EveAccount(dialog.result[0], dialog.result[1], self.login_manager.coder,
+                                     None, None, dialog.result[3], dialog.result[2])
                 self.login_manager.add_account(account)
 
     def func_add(self):
         dialog = AccountDialog("Create Account")
         if dialog.show():
-            # [name, password, path, dx]
-            path = dialog.result[2]
-            if not path.endswith(os.sep):
-                path = path + os.sep
-            account = EveAccount(dialog.result[0], dialog.result[1], self.login_manager.coder, path,
-                                 None, None, dialog.result[3])
+            # [name, password, profile_name, dx]
+            account = EveAccount(dialog.result[0], dialog.result[1], self.login_manager.coder,
+                                 None, None, dialog.result[3], dialog.result[2])
             self.login_manager.add_account(account)
             acc_list = self.account_list_model.stringList()
             acc_list.append(account.login_name)
@@ -215,6 +233,14 @@ class ControlMainWindow(QtGui.QMainWindow):
             self.activateWindow()
             # self.setWindowState(Qt.WindowNoState)
             # self.activateWindow()
+
+    def func_browse_eve(self):
+        folder = QDir.toNativeSeparators(
+            QFileDialog.getExistingDirectory(None, "Eve Directory", "", QFileDialog.ShowDirsOnly))
+        if not folder.endswith(os.sep):
+            folder += os.sep
+        self.ui.txt_client_path.setText(folder)
+        self.settings['eve_path'] = folder
 
     def check_eve_version(self):
         headers = {'User-Agent': EveLoginManager.useragent}
@@ -244,7 +270,7 @@ class ControlMainWindow(QtGui.QMainWindow):
 
     def set_server_status(self, text, number):
         self.ui.label_server_status.setText(
-            QtGui.QApplication.translate("main_window", text, None, QtGui.QApplication.UnicodeUTF8)
+            QApplication.translate("main_window", text, None)
             + "({0:d})".format(number))
 
     def get_auth_code(self, opener, request):
@@ -253,8 +279,8 @@ class ControlMainWindow(QtGui.QMainWindow):
         :param request: request to send using the given opener
         :return: the authcode
         """
-        inputDialog = QtGui.QInputDialog(self)
-        inputDialog.setInputMode(QtGui.QInputDialog.TextInput)
+        inputDialog = QInputDialog(self)
+        inputDialog.setInputMode(QInputDialog.TextInput)
         inputDialog.setCancelButtonText("Send Auth Mail")
         inputDialog.setLabelText("Please enter your Authcode")
         inputDialog.setWindowTitle("TwoFactorAuth")
@@ -262,13 +288,13 @@ class ControlMainWindow(QtGui.QMainWindow):
 
         response = None
 
-        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:  # send mail
+        if inputDialog.exec_() == QInputDialog.Rejected:  # send mail
             response = opener.open(request)
         else:
             return response, inputDialog.textValue().strip()
 
         inputDialog.setCancelButtonText("Cancel")
-        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
+        if inputDialog.exec_() == QInputDialog.Rejected:
             return response, None
         return response, inputDialog.textValue().strip()
 
@@ -277,13 +303,13 @@ class ControlMainWindow(QtGui.QMainWindow):
         :param mailurl: url to call for sending an authcode per mail
         :return: the authcode
         """
-        inputDialog = QtGui.QInputDialog(self)
-        inputDialog.setInputMode(QtGui.QInputDialog.TextInput)
+        inputDialog = QInputDialog(self)
+        inputDialog.setInputMode(QInputDialog.TextInput)
         inputDialog.setLabelText("Please enter a Charname")
         inputDialog.setWindowTitle("Charname Challange")
         inputDialog.setModal(True)
 
-        if inputDialog.exec_() == QtGui.QInputDialog.Rejected:
+        if inputDialog.exec_() == QInputDialog.Rejected:
             return None
 
         return inputDialog.textValue().strip()

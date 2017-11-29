@@ -23,6 +23,8 @@ class EveAccount(AutoStr):
         Returns a ascii decoded, b64 string, from the input utf-8 password that was encrypted
     """
 
+    version = 1
+
     @staticmethod
     def crypt_password(coder, password):
         return base64.b64encode(coder.encrypt(password.encode('utf-8'))).decode('ascii')
@@ -35,13 +37,14 @@ class EveAccount(AutoStr):
     def decrypt_password(coder, enc_password):
         return coder.decrypt(base64.b64decode(enc_password.encode('ascii'))).decode('utf-8')
 
-    def __init__(self, loginname, password, coder, evepath, bearer_token, client_token, dx="dx11"):
+    def __init__(self, loginname, password, coder, bearer_token, client_token, dx="dx11", profile_name="default"):
         self.login_name = loginname
         self.eve_password = EveAccount.crypt_password(coder, password)
-        self.eve_path = evepath
         self.direct_x = dx
         self.bearer_token = bearer_token
         self.client_token = client_token
+        self.profile_name = profile_name
+        self.version = EveAccount.version
 
     def plain_password(self, coder):
         return EveAccount.decrypt_password(coder, self.eve_password)
@@ -182,7 +185,8 @@ class AuthSiteParser(HTMLParser):
 
 
 class EveLoginManager(AutoStr):
-    useragent = 'Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:41.0) Gecko/20170101 Firefox/41.0'
+    useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' \
+                ' (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
     #  base path https://client.eveonline.com/launcherv3/en?steam_token=&server=tranquility
 
     base_url = "https://login.eveonline.com"
@@ -217,11 +221,12 @@ class EveLoginManager(AutoStr):
     db_acc_prefix = "acc_"
 
     @staticmethod
-    def do_login(account):
-        subprocess.Popen([account.eve_path + "bin\exefile.exe", "/noconsole",
-                          "/ssoToken={0}".format(account.client_token.token),
-                          "/triPlatform={0}".format(account.direct_x)],
-                         cwd=account.eve_path)
+    def do_login(account, eve_path):
+        subprocess.Popen([eve_path + "bin" + os.sep + "exefile.exe", "/noconsole",
+                         "/ssoToken={0}".format(account.client_token.token),
+                         "/triPlatform={0}".format(account.direct_x),
+                          "/settingsprofile={0}".format(account.profile_name)],
+                         cwd=eve_path)
 
     @staticmethod
     def bearer_url_from_eve_account(cookie_proc, coder, eve_account):
@@ -312,7 +317,7 @@ class EveLoginManager(AutoStr):
         if (EveLoginManager.db_acc_prefix + login_name) in self.db:
             del self.db[EveLoginManager.db_acc_prefix + login_name]
 
-    def login(self, loginname, auth_code_cb, charname_cb):
+    def login(self, loginname, auth_code_cb, charname_cb, eve_path):
         account = self.accounts[loginname]
 
         cookies = http.cookiejar.CookieJar()
@@ -328,7 +333,7 @@ class EveLoginManager(AutoStr):
                     raise e
                 else:
                     account.client_token = client_token
-                    EveLoginManager.do_login(account)
+                    EveLoginManager.do_login(account, eve_path)
                     return True
 
         try:
@@ -415,7 +420,7 @@ class EveLoginManager(AutoStr):
         except URLError as e:
             raise e
         else:
-            EveLoginManager.do_login(account)
+            EveLoginManager.do_login(account, eve_path)
 
     def save(self):
         for account in self.accounts:
@@ -425,4 +430,18 @@ class EveLoginManager(AutoStr):
     def load(self):
         for account_name in self.db.keys():
             if account_name.startswith(EveLoginManager.db_acc_prefix):
-                self.add_account(self.db[account_name])
+                acc = self.db[account_name]
+                # if we are in versioned
+                if hasattr(acc, 'version'):
+                    # this is where versioned conversions should happen
+                    # there is no other versioned thing yet, so just add it
+                    # if version matches
+                    if acc.version == EveAccount.version:
+                        self.add_account(acc)
+                else:
+                    # unversioned things
+                    crypt = Coding("xd".encode('utf-8'))
+                    nacc = EveAccount(acc.login_name, " ", crypt, acc.bearer_toke, acc.client_token, acc.direct_x, acc.profile_name)
+                    # set the old encoded password
+                    nacc.eve_password = acc.eve_password
+                    self.add_account(nacc)

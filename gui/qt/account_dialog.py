@@ -1,39 +1,34 @@
+from PySide2.QtWidgets import QDialog, QApplication
+
 __author__ = 'SpeedProg'
 
 import os
 import sys
 
-from PySide.QtGui import QDialog, QFileDialog, QApplication
-
 from gui.qt.generated import account_dialog
 
 
 class AccountDialog(QDialog):
-    def __init__(self, title="Account", name="", pw="", dx="dx11", path=""):
+
+    def __init__(self, title="Account", name="", pw="", dx="dx11", profile="default"):
         super().__init__()
         self.setWindowTitle(title)
         self.ui = account_dialog.Ui_Dialog()
         self.ui.setupUi(self)
         self.ui.inp_login_name.setText(name)
         self.ui.inp_password.setText(pw)
-        self.ui.lineEdit.setText(path)
+        self.ui.inp_profile_name.setText(profile)
         self.ui.cbox_direct_x.insertItems(0, ["dx11", "dx9"])
         index = self.ui.cbox_direct_x.findText(dx)
         self.ui.cbox_direct_x.setCurrentIndex(index)
         self.result = None
 
-    def browse_eve(self):
-        folder = QFileDialog.getExistingDirectory(None, "Eve Directory", "", QFileDialog.ShowDirsOnly)
-        if not folder.endswith(os.sep):
-            folder += os.sep
-        self.ui.lineEdit.setText(folder)
-
     def accept(self, *args, **kwargs):
         name = self.ui.inp_login_name.text()
         password = self.ui.inp_password.text()
-        path = self.ui.lineEdit.text()
+        profile_name = self.ui.inp_profile_name.text()
         dx = self.ui.cbox_direct_x.currentText()
-        self.result = [name, password, path, dx]
+        self.result = [name, password, profile_name, dx]
         super().accept(*args, **kwargs)
 
     def reject(self, *args, **kwargs):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>340</width>
-    <height>183</height>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,6 +102,45 @@
      <string>Clear Cache</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_client_path">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>170</y>
+      <width>46</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Eve Path</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_client_path">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>170</y>
+      <width>201</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_browse_eve">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>170</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Browse</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
@@ -187,6 +226,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_browse_eve</sender>
+   <signal>clicked()</signal>
+   <receiver>main_window</receiver>
+   <slot>func_browse_eve()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>298</x>
+     <y>185</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>509</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>func_launch()</slot>
@@ -194,5 +249,6 @@
   <slot>func_add()</slot>
   <slot>func_delete()</slot>
   <slot>func_clear_cache()</slot>
+  <slot>func_browse_eve()</slot>
  </slots>
 </ui>

@@ -6,8 +6,7 @@ import os
 #  from gui import mainwindow_support
 #
 #  from gui.systrayicon import SysTrayIcon
-
-from PySide.QtGui import QApplication
+from PySide2.QtWidgets import QInputDialog
 
 from eve.account import *
 
@@ -19,7 +18,7 @@ from threading import Thread
 from eve.eveapi import EveApi
 
 
-__version__ = "0.0.15"
+__version__ = "0.0.17"
 
 
 def add(args):
@@ -39,7 +38,7 @@ def login(args):
     crypt = Coding(args.encryption.encode('utf-8'))
     login_manager = EveLoginManager(crypt)
     login_manager.load()
-    login_manager.login(args.username)  # TODO: write console cbs
+    login_manager.login(args.username, args.eve_path)  # TODO: write console cbs
 #
 #
 # class GuiStarter():
@@ -99,15 +98,29 @@ def login(args):
 
 
 class QtStarter:
-    def __init__(self, crypter):
+    def __init__(self):
         self.app = QtSingleApplication('17660D78-290B-4282-8741-24595B156CB1', sys.argv)
         if self.app.isRunning():
             sys.exit(0)
-        self.window = ControlMainWindow(crypter)
+        self.window = None
         self.eve_api = EveApi()
         self.timer = None
 
-    def start_gui(self):
+    def start_gui(self, args):
+        crypt_key = args.encryption
+        if crypt_key is None:
+            input_dialog = QInputDialog()
+            input_dialog.setInputMode(QInputDialog.TextInput)
+            input_dialog.setCancelButtonText("No Password")
+            input_dialog.setLabelText("Please enter your Masterpassword")
+            input_dialog.setWindowTitle("Masterpassword")
+            input_dialog.setModal(False)
+            if input_dialog.exec_() == QInputDialog.Rejected:
+                crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
+            else:
+                crypt_key = input_dialog.textValue().strip()
+        crypt = Coding(crypt_key.encode('utf-8'))
+        self.window = ControlMainWindow(crypt)
         self.timer = threading.Timer(0.001, self.update_server_status,
                                      kwargs={'window': self.window, 'api': self.eve_api}).start()
         self.window.show()
@@ -139,19 +152,17 @@ class QtStarter:
 
 
 def gui(args):
-    crypt = Coding(args.encryption.encode('utf-8'))
     # vp_start_gui(crypt)
-    starter = QtStarter(crypt)
-    starter.start_gui()
+    starter = QtStarter()
+    starter.start_gui(args)
 
 
 def entry():
-    crypt_key = u"0238jh74ngz23v84m90fcqewmn4f89"
     #  http.client.HTTPConnection.debuglevel = 1  # debug requests
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--encryption",
                         help="Key used for password encryption/decryption, if not given uses default",
-                        nargs='?', default=crypt_key)
+                        nargs='?', default=None)
     subparsers = parser.add_subparsers()
 
     # parser for add
@@ -169,6 +180,7 @@ def entry():
     # parser for login
     parser_login = subparsers.add_parser('login', help='login -h for help')
     parser_login.add_argument("-n", "--username", help="Eve login username", required=True)
+    parser_login.add_argument("-p", "--eve-path", help="Path to eve.exe", required=True)
     parser_login.set_defaults(func=login)
 
     # parser for gui
