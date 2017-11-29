@@ -110,7 +110,6 @@ class SysTrayIcon(object):
                                        0,
                                        icon_flags)
         else:
-            print("Can't find icon file - using default.")
             hicon = win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
 
         if self.notify_id:
@@ -211,37 +210,3 @@ class SysTrayIcon(object):
             win32gui.DestroyWindow(self.hwnd)
         else:
             menu_action(self)
-
-
-def non_string_iterable(obj):
-    try:
-        iter(obj)
-    except TypeError:
-        return False
-    else:
-        return not isinstance(obj, basestring)
-
-# Minimal self test. You'll need a bunch of ICO files in the current working
-# directory in order for this to work...
-if __name__ == '__main__':
-    hover_text = "SysTrayIcon.py Demo"
-
-    def hello(sysTrayIcon):
-        print("Hello World.")
-
-    def simon(sysTrayIcon):
-        print("Hello Simon.")
-
-    def switch_icon(sysTrayIcon):
-        sysTrayIcon.icon = None
-        sysTrayIcon.refresh_icon()
-
-    menu_options = (('Say Hello', None, hello),
-                    ('Switch Icon', None, switch_icon),
-                    )
-
-    def bye(sysTrayIcon):
-        print('Bye, then.')
-
-    SysTrayIcon("tray.ico", hover_text, menu_options, on_quit=bye, default_menu_index=1)
-

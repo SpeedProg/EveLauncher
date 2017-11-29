@@ -246,10 +246,8 @@ class EveLoginManager(AutoStr):
                                          EveLoginManager.bearer_headers)
 
         response = opener.open(request)
-        print("Response: U+P Login")
-        print(response)
         url_data = response.read().decode('utf-8')
-        print(url_data)
+
         if '/account/authenticator?ReturnUrl' in url_data:  # need auth token
             return 1, response, url_data
 
@@ -367,10 +365,7 @@ class EveLoginManager(AutoStr):
                                'Origin': 'https://login.eveonline.com',
                                'Referer': refurl,
                                'Content-Type': 'application/x-www-form-urlencoded'}
-                    print(post_data)
-                    print(headers)
                     encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
-                    print(encoded_post_data)
 
                     request = urllib.request.Request(verurl, encoded_post_data, headers)
                     opener = urllib.request.build_opener(cookie_proc)
@@ -398,7 +393,6 @@ class EveLoginManager(AutoStr):
             else:
                 token_url = ret_data[1]
 
-            print(token_url)
             if token_url == EveLoginManager.url_eula:
                 eula_html = response.read()
                 parser = EulaParser()

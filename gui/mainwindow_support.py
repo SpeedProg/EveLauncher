@@ -122,7 +122,6 @@ def close():
 
 
 def destroy_window():
-    print("destroy_window")
     # Function which closes the window.
     global top_level
     top_level.destroy()
