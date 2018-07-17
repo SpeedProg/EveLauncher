@@ -1,19 +1,16 @@
-# This Launcher was DISCONTINUED but I kinda use it now, because new Launcher gets worse again :(
-
 # PveLauncher
-A simple python eve launcher, supporting Two Factor Authentication and Evepath per account
+A simple python eve launcher, supporting Two Factor Authentication
 
 ### Features
 
  * TwoFactor Authentification
- * Mail Code support
- * ~~Update check~~
+ * Eve update check
  * Serverstatus (using eve api)
  * Encrypted passwords (Masterpassword)
 
 
 ## Download
-https://github.com/SpeedProg/PveLauncher/releases
+https://github.com/SpeedProg/EveLauncher/releases
 
 ## Pictures
 Main Window:
