@@ -276,7 +276,7 @@ class ControlMainWindow(QMainWindow):
         """
         inputDialog = QInputDialog(self)
         inputDialog.setInputMode(QInputDialog.TextInput)
-        inputDialog.setCancelButtonText("Send Auth Mail")
+        inputDialog.setCancelButtonText("Cancel")
         inputDialog.setLabelText("Please enter your Authcode")
         inputDialog.setWindowTitle("TwoFactorAuth")
         inputDialog.setModal(True)
@@ -284,7 +284,7 @@ class ControlMainWindow(QMainWindow):
         response = None
 
         if inputDialog.exec_() == QInputDialog.Rejected:  # send mail
-            response = opener.open(request)
+            return None, None
         else:
             return response, inputDialog.textValue().strip()
 
