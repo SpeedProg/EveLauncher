@@ -12,6 +12,7 @@ from tkinter.messagebox import showinfo
 
 from eve.account import EveLoginManager, EveAccount
 from gui.newaccountdialog import AccountDialog
+from eve.eveapi import EveApi
 
 
 def gui_edit():
@@ -80,18 +81,11 @@ def init(top, gui, crypter):
 
 
 def check_eve_version():
-    headers = {'User-Agent': EveLoginManager.useragent}
-    version_url = "http://client.eveonline.com/patches/premium_patchinfoTQ_inc.txt"
-    req = request.Request(version_url, headers=headers)
-    response = request.urlopen(req)
-    version_data = response.read().decode('utf-8')
-    match = re.match("BUILD:(\\d+)", version_data)
-
-    if match is None:
+    server_status = EveApi.get_server_status()
+    if server_status.version is None:
         return None
 
-    version_string = match.group(1)
-    version_string = version_string.strip()
+    version_string = str(server_status.version)
     out_of_date_eves = []
     for acc in login_manager.accounts:
         up_to_date = check_eve_version_for_account(version_string, login_manager.accounts[acc])

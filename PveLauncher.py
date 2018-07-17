@@ -106,7 +106,6 @@ class QtStarter:
         if self.app.isRunning():
             sys.exit(0)
         self.window = None
-        self.eve_api = EveApi()
         self.timer = None
 
     def start_gui(self, args):
@@ -130,7 +129,7 @@ class QtStarter:
         crypt = Coding(crypt_key.encode('utf-8'))
         self.window = ControlMainWindow(crypt)
         self.timer = threading.Timer(0.001, self.update_server_status,
-                                     kwargs={'window': self.window, 'api': self.eve_api}).start()
+                                     kwargs={'window': self.window}).start()
         self.window.show()
         ret = self.app.exec_()
         if self.timer is not None:
@@ -157,10 +156,10 @@ class QtStarter:
             with open('pwcheck.json', 'w') as pw_file:
                 json.dump(check, pw_file)
 
-    def update_server_status(self, window, api):
+    def update_server_status(self, window):
         try:
-            status = api.get_server_status()
-            if status.server_open:
+            status = EveApi.get_server_status()
+            if status.online_players > 10:
                 status_text = "Online"
             else:
                 status_text = "Offline"
@@ -170,7 +169,7 @@ class QtStarter:
         except URLError:
             window.set_server_status("Failed ", 0)
 
-        self.timer = threading.Timer(10.0, self.update_server_status, kwargs={'window': window, 'api': api})
+        self.timer = threading.Timer(10.0, self.update_server_status, kwargs={'window': window})
         self.timer.start()
 
 

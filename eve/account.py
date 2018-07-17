@@ -1,3 +1,4 @@
+from typing import Optional
 __author__ = 'SpeedProg'
 import urllib.parse
 import urllib.request
@@ -184,6 +185,67 @@ class AuthSiteParser(HTMLParser):
         pass
 
 
+class LoginFormParser(HTMLParser):
+    def __init__(self):
+        super(LoginFormParser, self).__init__()
+        self.hidden_inputs = []
+        self.in_form = False
+        self.in_form_dept = 0
+        # this keeps track how deep we are in form
+        # forms SHOULD not be inside other forms
+        # but who knows what ccp is doing
+        self.form_dept = 0
+
+    def has_attr(self, attr_name: str, attrs):
+        attr_name = attr_name.lower()
+        for attr in attrs:
+            if attr[0].lower() == attr_name:
+                return True
+
+        return False
+
+    def get_first_value(self, attr_name: str, attrs) -> Optional[str]:
+        attr_name = attr_name.lower()
+        for attr in attrs:
+            if attr[0].lower() == attr_name:
+                return attr[1]
+
+        return None
+
+    def hidden_input_handler(self, tag, attrs):
+        # we are in the login form and found a input tag
+        # if it is hidden get its value and name
+        if self.in_form and tag == 'input':
+            if self.has_attr('name', attrs) and self.has_attr('type', attrs) and self.has_attr('value', attrs):
+                if self.get_first_value('type', attrs).lower() == 'hidden':
+                    val = self.get_first_value('value', attrs)
+                    name = self.get_first_value('name', attrs)
+                    self.hidden_inputs.append((name, val))
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'form':
+            if self.has_attr('action', attrs):
+                action_attr = self.get_first_value('action', attrs)
+                if action_attr.lower().startswith('/account/logon?'):
+                    self.in_form = True
+                    self.in_form_dept = self.form_dept+1
+            self.form_dept += 1
+            return
+
+        self.hidden_input_handler(tag, attrs)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        if tag == 'form':
+            if self.form_dept == self.in_form_dept:
+                self.in_form = False
+
+            self.form_dept -= 1
+
+
 class EveLoginManager(AutoStr):
     useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' \
                 ' (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
@@ -193,10 +255,10 @@ class EveLoginManager(AutoStr):
     url_char_challenge = "/Account/Challenge?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3D" \
                          "eveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
                          "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user"
-    url_bearer_token = "https://login.eveonline.com/Account/LogOn?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3D" \
-                       "eveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F" \
-                       "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user"
-
+    url_bearer_token = ("https://login.eveonline.com/account/logon?ReturnUrl=%2Foauth%2Fauthorize%2F%3Fclient_id%3D"
+                       "eveLauncherTQ%26lang%3Den%26response_type%3Dtoken%26redirect_uri%3Dhttps%3A%2F%2F"
+                       "login.eveonline.com%2Flauncher%3Fclient_id%3DeveLauncherTQ%26scope%3DeveClientToken%2520user")
+    url_login_form = url_bearer_token
     url_client_token = "https://login.eveonline.com/launcher/token?accesstoken="
     bearer_headers = {'User-Agent': useragent,
                       'Origin': 'https://login.eveonline.com',
@@ -237,12 +299,25 @@ class EveLoginManager(AutoStr):
         """
         opener = urllib.request.build_opener(cookie_proc)
 
+        # lets get the csrf token
+        request = urllib.request.Request(EveLoginManager.url_login_form)
+        response = opener.open(request)
+        login_page = response.read().decode('utf-8')
+
+        login_parser = LoginFormParser()
+        login_parser.feed(login_page)
+
         post_data = {'Password': eve_account.plain_password(coder),
                      'UserName': eve_account.login_name}
 
+        # add the hidden input fields from the login form
+        for input_data in login_parser.hidden_inputs:
+            post_data[input_data[0]] = input_data[1]
+
         encoded_post_data = urllib.parse.urlencode(post_data).encode('utf-8')
 
-        request = urllib.request.Request(EveLoginManager.url_bearer_token, encoded_post_data,
+        request = urllib.request.Request(EveLoginManager.url_bearer_token,
+                                         encoded_post_data,
                                          EveLoginManager.bearer_headers)
 
         response = opener.open(request)

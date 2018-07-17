@@ -1,9 +1,11 @@
 import json
-from PySide2 import QtGui
+from PySide2 import QtGui, QtWidgets
 
-from PySide2.QtCore import QObject, QMetaObject, Slot, Signal, QTextStream, QEvent, Qt, QTimer, SLOT, QDir
+from PySide2.QtCore import QObject, QMetaObject, Slot, Signal, QTextStream, QEvent, Qt, QTimer, SLOT, QDir,\
+    QStringListModel
 from PySide2.QtNetwork import QLocalSocket, QLocalServer
 from PySide2.QtWidgets import QApplication, QSystemTrayIcon, QFileDialog, QMainWindow, QInputDialog, QMessageBox
+from eve.eveapi import EveApi
 
 __author__ = 'SpeedProg'
 
@@ -130,7 +132,7 @@ class ControlMainWindow(QMainWindow):
         self.ui = Ui_main_window()
         self.ui.setupUi(self)
         self.icon.activated.connect(self.activate)
-        self.account_list_model = QtGui.QStringListModel()
+        self.account_list_model = QStringListModel()
         self.ui.listView.setModel(self.account_list_model)
 
         self.login_manager = EveLoginManager(crypter)
@@ -249,24 +251,17 @@ class ControlMainWindow(QMainWindow):
         #response = request.urlopen(req)
         #version_data = response.read().decode('utf-8')
         #match = re.match("BUILD:(\\d+)", version_data)
+        server_status = EveApi.get_server_status()
+        if server_status.version is None:
+            return None
 
-        #if match is None:
-        #    return None
-
-        #version_string = match.group(1)
-        #version_string = version_string.strip()
-        out_of_date_eves = []
-        #for acc in self.login_manager.accounts:
-        #    up_to_date = check_eve_version_for_account(version_string, self.login_manager.accounts[acc])
-        #    if not up_to_date:
-        #        out_of_date_eves.append(self.login_manager.accounts[acc].eve_path)
-
-        #if len(out_of_date_eves) > 0:
-        #    info_msg = "Folloing Eve Clients are out of date:"
-        #    for path in out_of_date_eves:
-        #        info_msg += "\n" + path
-        #    invoke_in_main_thread(QtGui.QMessageBox.information, self, "Eve Clients out of date",
-        #                          info_msg, QtGui.QMessageBox.Ok)
+        version_string = str(server_status.version)
+        eve_version_okay: bool = check_eve_version(
+            version_string,
+            self.ui.txt_client_path.text())
+        if not eve_version_okay:
+            invoke_in_main_thread(QtWidgets.QMessageBox.information, self, "Eve Clients out of date",
+                                  "Your eve client is out of date.", QtWidgets.QMessageBox.Ok)
 
     def set_server_status(self, text, number):
         self.ui.label_server_status.setText(
@@ -315,9 +310,9 @@ class ControlMainWindow(QMainWindow):
         return inputDialog.textValue().strip()
 
 
-def check_eve_version_for_account(current_version, account):
+def check_eve_version(current_version, eve_path):
     config = configparser.ConfigParser()
-    config.read(account.eve_path + "start.ini")
+    config.read(os.path.join(eve_path, "start.ini"))
     if 'main' in config.sections():
         local_version = config['main']['build']
         local_version = local_version.strip()

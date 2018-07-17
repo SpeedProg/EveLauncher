@@ -1,10 +1,13 @@
 from urllib.error import URLError
+import json
 
 __author__ = 'SpeedProg'
 import xml.etree.ElementTree as ElementTree
 from datetime import datetime, timedelta, timezone
 import shelve
 import urllib.request
+from email._parseaddr import mktime_tz
+from email.utils import parsedate_tz
 
 
 class ShelveCache:
@@ -52,71 +55,54 @@ class ServerStatusApi(ApiElement):
 
     def __init__(self):
         super().__init__(ServerStatusApi.element_name)
-        self.url = "https://api.eveonline.com/server/ServerStatus.xml.aspx"
+
+        self.url = "https://esi.evetech.net/latest/status/?datasource=tranquility"
         try:
-            self.api_data = urllib.request.urlopen(self.url).read()
+            resp = urllib.request.urlopen(self.url)
+            res = json.loads(resp.read().decode('utf-8'))
         except URLError as e:
             print(e)
+            self.online_players = 0
+            self.version = None
+            self.cached_until = (datetime.now(timezone.utc) +
+                                 timedelta(minutes=10))
+            self.set_good_until(self.cached_until)
+            return
 
-        root = ElementTree.fromstring(self.api_data)
-        self.current_time = None
-        self.server_open = False
-        self.online_players = 0
-        self.cached_until = None
-
-        for child in root:
-            if child.tag == 'currentTime':
-                self.parse_current_time(child)
-
-            if child.tag == 'result':
-                self.parse_result(child)
-
-            if child.tag == 'cachedUntil':
-                self.parse_cached_until(child)
-
-        time_delta = self.cached_until - self.current_time
-        good_until = datetime.now(timezone.utc) + time_delta
-        self.set_good_until(good_until)
-
-    def parse_current_time(self, element):
-        self.current_time = datetime.strptime(element.text, "%Y-%m-%d %H:%M:%S")
-
-    def parse_result(self, element):
-        for child in element:
-            if child.tag == 'serverOpen':
-                self.parse_server_open(child)
-
-            if child.tag == 'onlinePlayers':
-                self.parse_online_players(child)
-
-    def parse_server_open(self, element):
-        if element.text == 'True':
-            self.server_open = True
+        self.online_players = res['players'] if 'players' in res else 0
+        self.version = res['server_version'] if 'server_version' in res else None
+        header = resp.info()
+        if 'expires' in header:
+            self.cached_until = ServerStatusApi.header_to_datetime(header['expires'])
+            self.set_good_until(datetime.now(timezone.utc)+timedelta(minutes=1))
         else:
-            self.server_open = False
+            self.cached_until = None
+            self.set_good_until(datetime.now(timezone.utc)+timedelta(minutes=1))
 
-    def parse_online_players(self, element):
-        self.online_players = int(element.text)
-
-    def parse_cached_until(self, element):
-        self.cached_until = datetime.strptime(element.text, "%Y-%m-%d %H:%M:%S")
+    @staticmethod
+    def header_to_datetime(header) -> datetime:
+        return datetime.fromtimestamp(mktime_tz(parsedate_tz(header)))
 
 
 class EveApi:
-    def __init__(self):
-        self.cache = ShelveCache("api_cache")
+    cache = ShelveCache("api_cache")
 
-    def get_server_status(self):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def get_server_status():
         try:
-            element = self.cache.get_api_element(ServerStatusApi.element_name)
+            element = EveApi.cache.get_api_element(
+                ServerStatusApi.element_name)
         except EOFError:
             element = ServerStatusApi()
-            self.cache.set_api_element(element)
+            EveApi.cache.set_api_element(element)
             return element
 
         if element is not None:
             return element
 
         element = ServerStatusApi()
-        self.cache.set_api_element(element)
+        EveApi.cache.set_api_element(element)
         return element
