@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\source\git\PveLauncher\gui\qt\generated\account_dialog.ui'
+# Form implementation generated from reading ui file 'F:\source\git\PveLauncher\gui\qt\generated\account_dialog.ui',
+# licensing of 'F:\source\git\PveLauncher\gui\qt\generated\account_dialog.ui' applies.
 #
-# Created: Wed Nov 29 17:10:24 2017
-#      by: pyside2-uic  running on PySide2 2.0.0~alpha0
+# Created: Sat Nov 10 13:07:00 2018
+#      by: pyside2-uic  running on PySide2 5.11.2
 #
-# WARNING! All changes made in this file will be lost
-from PySide2 import QtWidgets, QtCore
+# WARNING! All changes made in this file will be lost!
 
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):

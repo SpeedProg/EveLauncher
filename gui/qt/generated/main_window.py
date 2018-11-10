@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\source\git\PveLauncher\gui\qt\generated\main_window.ui'
+# Form implementation generated from reading ui file 'F:\source\git\PveLauncher\gui\qt\generated\main_window.ui',
+# licensing of 'F:\source\git\PveLauncher\gui\qt\generated\main_window.ui' applies.
 #
-# Created: Wed Nov 29 17:10:25 2017
-#      by: pyside2-uic  running on PySide2 2.0.0~alpha0
+# Created: Sat Nov 10 13:07:00 2018
+#      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,40 +13,47 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_main_window(object):
     def setupUi(self, main_window):
         main_window.setObjectName("main_window")
-        main_window.resize(340, 212)
+        main_window.resize(342, 253)
         self.centralwidget = QtWidgets.QWidget(main_window)
         self.centralwidget.setObjectName("centralwidget")
         self.listView = QtWidgets.QListView(self.centralwidget)
-        self.listView.setGeometry(QtCore.QRect(0, 0, 251, 161))
+        self.listView.setGeometry(QtCore.QRect(0, 0, 251, 201))
         self.listView.setObjectName("listView")
         self.btn_launcher = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_launcher.setGeometry(QtCore.QRect(260, 20, 75, 23))
+        self.btn_launcher.setGeometry(QtCore.QRect(260, 60, 75, 23))
         self.btn_launcher.setObjectName("btn_launcher")
         self.label_server_status = QtWidgets.QLabel(self.centralwidget)
         self.label_server_status.setGeometry(QtCore.QRect(260, 0, 71, 16))
         self.label_server_status.setObjectName("label_server_status")
         self.btn_edit = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_edit.setGeometry(QtCore.QRect(260, 50, 75, 23))
+        self.btn_edit.setGeometry(QtCore.QRect(260, 90, 75, 23))
         self.btn_edit.setObjectName("btn_edit")
         self.btn_add = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_add.setGeometry(QtCore.QRect(260, 80, 75, 23))
+        self.btn_add.setGeometry(QtCore.QRect(260, 120, 75, 23))
         self.btn_add.setObjectName("btn_add")
         self.btn_delete = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_delete.setGeometry(QtCore.QRect(260, 110, 75, 23))
+        self.btn_delete.setGeometry(QtCore.QRect(260, 150, 75, 23))
         self.btn_delete.setObjectName("btn_delete")
         self.btn_clear_cache = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_clear_cache.setGeometry(QtCore.QRect(260, 140, 75, 23))
+        self.btn_clear_cache.setGeometry(QtCore.QRect(260, 180, 75, 23))
         self.btn_clear_cache.setObjectName("btn_clear_cache")
         self.label_client_path = QtWidgets.QLabel(self.centralwidget)
-        self.label_client_path.setGeometry(QtCore.QRect(0, 170, 46, 21))
+        self.label_client_path.setGeometry(QtCore.QRect(0, 210, 46, 21))
         self.label_client_path.setObjectName("label_client_path")
         self.txt_client_path = QtWidgets.QLineEdit(self.centralwidget)
-        self.txt_client_path.setGeometry(QtCore.QRect(50, 170, 201, 20))
+        self.txt_client_path.setGeometry(QtCore.QRect(50, 210, 201, 20))
         self.txt_client_path.setReadOnly(True)
         self.txt_client_path.setObjectName("txt_client_path")
         self.btn_browse_eve = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_browse_eve.setGeometry(QtCore.QRect(260, 170, 75, 23))
+        self.btn_browse_eve.setGeometry(QtCore.QRect(260, 210, 75, 23))
         self.btn_browse_eve.setObjectName("btn_browse_eve")
+        self.cbox_server = QtWidgets.QComboBox(self.centralwidget)
+        self.cbox_server.setGeometry(QtCore.QRect(260, 30, 69, 22))
+        self.cbox_server.setObjectName("cbox_server")
+        self.cbox_server.addItem("")
+        self.cbox_server.setItemText(0, "tq")
+        self.cbox_server.addItem("")
+        self.cbox_server.setItemText(1, "sisi")
         main_window.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(main_window)
         self.statusbar.setObjectName("statusbar")

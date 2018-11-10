@@ -6,6 +6,7 @@ from PySide2.QtCore import QObject, QMetaObject, Slot, Signal, QTextStream, QEve
 from PySide2.QtNetwork import QLocalSocket, QLocalServer
 from PySide2.QtWidgets import QApplication, QSystemTrayIcon, QFileDialog, QMainWindow, QInputDialog, QMessageBox
 from eve.eveapi import EveApi
+import logging
 
 __author__ = 'SpeedProg'
 
@@ -20,6 +21,8 @@ from queue import Queue
 from gui.qt.generated.main_window import Ui_main_window
 from eve.account import EveLoginManager, EveAccount
 from gui.qt.account_dialog import AccountDialog
+
+logger = logging.getLogger(__name__)
 
 
 class Invoker(QObject):
@@ -183,9 +186,12 @@ class ControlMainWindow(QMainWindow):
         # i get QModelIndex here
         for idx in indexes:
             try:
-                self.login_manager.login(idx.data(), self.get_auth_code, self.get_charname,
-                                         self.ui.txt_client_path.text())
+                self.login_manager.login(idx.data(), self.get_auth_code,
+                                         self.get_charname,
+                                         self.ui.txt_client_path.text(),
+                                         self.ui.cbox_server.currentText())
             except Exception as e:
+                logger.exception('Failed to launch')
                 invoke_in_main_thread(QMessageBox.critical, self, "Launch Error",
                                       e.__str__(), QMessageBox.Ok)
 
