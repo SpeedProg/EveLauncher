@@ -1,1 +1,2 @@
-C:\Python34\python C:\Python34\Lib\site-packages\PySide\scripts\uic.py F:\source\git\PveLauncher\gui\qt\generated\account_dialog.ui -o F:\source\git\PveLauncher\gui\qt\generated\account_dialog.py
+pyside2-uic F:\source\git\PveLauncher\gui\qt\generated\account_dialog.ui -o F:\source\git\PveLauncher\gui\qt\generated\account_dialog.py
+pyside2-uic F:\source\git\PveLauncher\gui\qt\generated\main_window.ui -o F:\source\git\PveLauncher\gui\qt\generated\main_window.py
